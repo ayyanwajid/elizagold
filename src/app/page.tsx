@@ -683,21 +683,21 @@ export default function Home() {
                     <th className="py-6 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest w-1/3">
                       Key Standard
                     </th>
-                    <th className="py-6 px-6 w-1/3 relative">
-                      {/* Floating Crown Badge */}
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] text-[10px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-lg border border-[#fff3b0] flex items-center gap-1 z-20">
-                        <Award className="w-3.5 h-3.5" />
-                        <span>Winner • Best Hair Care</span>
-                      </div>
-                      <div className="bg-gradient-to-b from-[#0b2912] via-[#061e0c] to-[#041207] text-white p-5 rounded-t-2xl border-t-2 border-x-2 border-[#d4af37] shadow-[0_-5px_25px_rgba(212,175,55,0.25)] text-center">
+                    <th className="py-4 px-6 w-1/3 align-bottom">
+                      <div className="bg-gradient-to-b from-[#0b2912] via-[#061e0c] to-[#041207] text-white p-5 rounded-t-2xl border-t-2 border-x-2 border-[#d4af37] shadow-[0_-5px_25px_rgba(212,175,55,0.25)] text-center flex flex-col items-center">
+                        {/* Gold Crown Badge */}
+                        <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] text-[10px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full shadow-md border border-[#fff3b0] mb-2">
+                          <Award className="w-3.5 h-3.5" />
+                          <span>Winner • Best Hair Care</span>
+                        </div>
                         <h3 className="font-serif font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0]">
                           Eliza Gold Roghan-e-Azam
                         </h3>
                         <p className="text-[11px] text-emerald-200/80 font-medium mt-0.5">100% Pure Herbal Formulation</p>
                       </div>
                     </th>
-                    <th className="py-6 px-6 text-sm font-bold text-gray-400 text-center w-1/3">
-                      <div className="bg-gray-100 p-5 rounded-t-2xl border-t border-x border-gray-200 text-center">
+                    <th className="py-4 px-6 text-sm font-bold text-gray-400 text-center w-1/3 align-bottom">
+                      <div className="bg-gray-100 p-5 rounded-t-2xl border-t border-x border-gray-200 text-center flex flex-col items-center justify-end h-full">
                         <h3 className="font-bold text-gray-500 text-base">Ordinary Market Oils</h3>
                         <p className="text-[11px] text-gray-400 font-normal mt-0.5">Synthetic & Diluted Base</p>
                       </div>
