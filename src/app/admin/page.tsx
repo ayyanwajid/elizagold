@@ -193,8 +193,7 @@ export default function AdminDashboard() {
     }
     prevOrderCountRef.current = formatted.length;
     setOrders(formatted);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [convexOrders, isAuthenticated]);
+  }, [convexOrders, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── SYNC CONVEX REVIEWS LIVE ───────────────────────────────────────────
   useEffect(() => {

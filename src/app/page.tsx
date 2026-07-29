@@ -44,7 +44,7 @@ interface CartItem {
   image: string;
 }
 
-const BUNDLE_OPTIONS = [
+const BASE_BUNDLE_OPTIONS = [
   {
     id: "single",
     title: "1 Bottle (Starter Pack)",
@@ -140,14 +140,48 @@ const REVIEWS_DATA = [
 export default function Home() {
   // State Management
   const [selectedImage, setSelectedImage] = useState(0);
-  const [selectedBundle, setSelectedBundle] = useState(BUNDLE_OPTIONS[1]); // Default 2 bottles
+  // Admin-configurable settings (synced from /admin via localStorage)
+  const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
+  const [whatsappNumber, setWhatsappNumber] = useState("+923001234567");
+  const [activeCoupons, setActiveCoupons] = useState<Array<{code: string; discountValue: number; type: string; active: boolean}>>([{ code: "ELIZA10", discountValue: 10, type: "Percentage", active: true }]);
+  const [bundleOptions, setBundleOptions] = useState(BASE_BUNDLE_OPTIONS);
+  const [selectedBundle, setSelectedBundle] = useState(BASE_BUNDLE_OPTIONS[1]);
+
+  // Load admin settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedPrices = localStorage.getItem("eliza_product_prices");
+      if (savedPrices) {
+        const prices = JSON.parse(savedPrices);
+        const updated = BASE_BUNDLE_OPTIONS.map((b, i) => ({
+          ...b,
+          price: i === 0 ? prices.bottle1 : i === 1 ? prices.bottle2 : prices.bottle3
+        }));
+        setBundleOptions(updated);
+        setSelectedBundle(updated[1]);
+      }
+
+      const savedAnnouncement = localStorage.getItem("eliza_announcement");
+      if (savedAnnouncement) setAnnouncementText(savedAnnouncement);
+
+      const savedWhatsapp = localStorage.getItem("eliza_whatsapp");
+      if (savedWhatsapp) setWhatsappNumber(savedWhatsapp);
+
+      const savedCoupons = localStorage.getItem("eliza_coupons");
+      if (savedCoupons) {
+        const parsed = JSON.parse(savedCoupons);
+        setActiveCoupons(parsed.filter((c: any) => c.active));
+      }
+    } catch { /* fallback to defaults */ }
+  }, []);
   const [quantity, setQuantity] = useState(1);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addScalpMassager, setAddScalpMassager] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
-  
+  const [discountPercent, setDiscountPercent] = useState(10);
+
   interface OrderConfirmationDetails {
     orderId: string;
     customer: {
@@ -275,16 +309,19 @@ export default function Home() {
   // Cart Financials
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const massagerPrice = addScalpMassager ? 299 : 0;
-  const currentDiscount = discountApplied ? Math.round((subtotal + massagerPrice) * 0.1) : 0;
+  const currentDiscount = discountApplied ? Math.round((subtotal + massagerPrice) * (discountPercent / 100)) : 0;
   const grandTotal = Math.max(0, subtotal + massagerPrice - currentDiscount);
   const isFreeDelivery = subtotal >= 1499;
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
-    if (couponCode.trim().toUpperCase() === "ELIZA10") {
+    const code = couponCode.trim().toUpperCase();
+    const matchedCoupon = activeCoupons.find(c => c.code === code && c.active);
+    if (matchedCoupon) {
       setDiscountApplied(true);
+      setDiscountPercent(matchedCoupon.discountValue || 10);
     } else {
-      alert("Invalid Code. Try using 'ELIZA10' for 10% Off!");
+      alert(`Invalid coupon code. Available codes: ${activeCoupons.map(c => c.code).join(", ")}`);
     }
   };
 
@@ -397,12 +434,13 @@ export default function Home() {
       {/* ANNOUNCEMENT BAR WITH LIVE COUNTDOWN TIMER */}
       <div className="bg-[#0b2912] text-white text-xs py-2.5 px-4 text-center tracking-widest uppercase font-semibold flex flex-wrap items-center justify-center gap-2 border-b border-[#d4af37]/20">
         <Flame className="w-4 h-4 text-[#d4af37] animate-pulse" />
-        <span>FLASH SALE: 40% OFF + FREE CASH ON DELIVERY</span>
+        <span>{announcementText}</span>
         <span className="bg-[#d4af37] text-[#0b2912] font-black px-2.5 py-0.5 rounded text-[11px] font-mono tracking-tight shadow-inner">
           ENDS IN {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
         </span>
-        <span className="hidden md:inline text-[#d4af37] font-bold">| USE CODE: ELIZA10 FOR EXTRA 10% OFF</span>
+        <span className="hidden md:inline text-[#d4af37] font-bold">| USE CODE: {activeCoupons[0]?.code || "ELIZA10"} FOR EXTRA {activeCoupons[0]?.discountValue || 10}% OFF</span>
       </div>
+
 
       {/* HEADER */}
       <header className="sticky top-0 z-40 bg-gradient-to-r from-[#041207] via-[#0a2911] to-[#041207] backdrop-blur-md border-b border-[#d4af37]/30 px-3 sm:px-6 md:px-12 py-2.5 sm:py-3.5 flex items-center justify-between shadow-xl">
@@ -571,7 +609,7 @@ export default function Home() {
                   Select Quantity & Save:
                 </label>
 
-                {BUNDLE_OPTIONS.map((bundle) => {
+                {bundleOptions.map((bundle) => {
                   const isSelected = selectedBundle.id === bundle.id;
                   return (
                     <div
@@ -1281,7 +1319,7 @@ export default function Home() {
             </h4>
             <div className="space-y-2 text-xs text-gray-300">
               <a
-                href="https://wa.me/923001234567"
+                href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-emerald-400 font-bold hover:underline bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-lg"
@@ -1570,7 +1608,7 @@ export default function Home() {
                     </motion.button>
 
                     <a
-                      href={`https://wa.me/923001234567?text=Hi%20Eliza%20Gold,%20I%20want%20to%20order%20${encodeURIComponent(cartItems[0]?.bundleTitle || "Roghan-e-Azam Hair Oil")}`}
+                      href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=Hi%20Eliza%20Gold,%20I%20want%20to%20order%20${encodeURIComponent(cartItems[0]?.bundleTitle || "Roghan-e-Azam Hair Oil")}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full mt-2.5 bg-[#25D366] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#1ebd59] transition-colors flex items-center justify-center gap-2 shadow-sm"
@@ -1635,7 +1673,7 @@ export default function Home() {
 
               <div className="space-y-3">
                 <a
-                  href={`https://wa.me/923001234567?text=Hi%20Eliza%20Gold,%20I%20just%20placed%20order%20${orderConfirmed.orderId}`}
+                  href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=Hi%20Eliza%20Gold,%20I%20just%20placed%20order%20${orderConfirmed.orderId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#20ba5a] transition-colors"
@@ -1735,7 +1773,7 @@ export default function Home() {
 
       {/* FLOATING WHATSAPP BUTTON */}
       <a
-        href="https://wa.me/923001234567"
+        href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-30 bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2 font-bold text-xs"
