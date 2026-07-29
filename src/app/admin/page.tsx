@@ -18,7 +18,9 @@ import {
   Users,
   Package,
   Lock,
-  Filter
+  Filter,
+  Printer,
+  MessageCircle
 } from "lucide-react";
 
 type TabType = "overview" | "orders" | "products" | "coupons" | "settings";
@@ -91,10 +93,10 @@ export default function AdminDashboard() {
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
-  // Store States
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [selectedPrintOrder, setSelectedPrintOrder] = useState<AdminOrder | null>(null);
 
   // Products Pricing State
   const [productPrices, setProductPrices] = useState({
@@ -494,11 +496,11 @@ export default function AdminDashboard() {
                           </td>
                           <td className="py-4 px-4 font-extrabold text-gray-900 text-sm">Rs. {o.total?.toLocaleString()}</td>
                           <td className="py-4 px-4 text-gray-500">{o.date}</td>
-                          <td className="py-4 px-4">
+                          <td className="py-4 px-4 flex items-center gap-2">
                             <select
                               value={o.status || "Pending"}
                               onChange={(e) => updateOrderStatus(o.orderId, e.target.value)}
-                              className={`px-3 py-1.5 text-xs rounded-lg font-bold outline-none border transition-colors cursor-pointer ${
+                              className={`px-2.5 py-1.5 text-xs rounded-lg font-bold outline-none border transition-colors cursor-pointer ${
                                 o.status === "Delivered" ? "bg-emerald-100 text-emerald-800 border-emerald-300" :
                                 o.status === "Dispatched" ? "bg-blue-100 text-blue-800 border-blue-300" :
                                 o.status === "Processing" ? "bg-purple-100 text-purple-800 border-purple-300" :
@@ -512,6 +514,24 @@ export default function AdminDashboard() {
                               <option value="Delivered">🟢 Delivered</option>
                               <option value="Cancelled">🔴 Cancelled</option>
                             </select>
+
+                            <a
+                              href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=Hi%20${encodeURIComponent(o.customer.fullName)},%20your%20Eliza%20Gold%20order%20${o.orderId}%20status%20is%20now%20${o.status}.`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-2 bg-[#25D366] text-white rounded-lg hover:brightness-110 transition-all inline-flex items-center justify-center shadow-sm"
+                              title="Notify Customer via WhatsApp"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+
+                            <button
+                              onClick={() => setSelectedPrintOrder(o)}
+                              className="p-2 bg-[#0b2912] text-[#d4af37] rounded-lg hover:bg-black transition-all inline-flex items-center justify-center shadow-sm cursor-pointer"
+                              title="Print Thermal Courier Label Slip"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -708,15 +728,70 @@ export default function AdminDashboard() {
                   />
                 </div>
 
-                <button
-                  onClick={() => alert("Storefront announcement & contact settings saved!")}
-                  className="bg-[#0b2912] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#154620]"
-                >
-                  Save Store Settings
-                </button>
               </div>
             </div>
           )}
+
+        {/* PRINTABLE COURIER SHIPPING SLIP MODAL */}
+        {selectedPrintOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-white max-w-md w-full rounded-2xl p-6 space-y-4 border-2 border-black shadow-2xl relative font-sans text-black">
+              <div className="flex justify-between items-center border-b-2 border-black pb-3">
+                <div>
+                  <h3 className="font-serif font-black text-xl uppercase tracking-wider text-[#0b2912]">ELIZA GOLD PAKISTAN</h3>
+                  <p className="text-[10px] font-bold text-gray-600">OFFICIAL COD COURIER DISPATCH SLIP</p>
+                </div>
+                <button
+                  onClick={() => setSelectedPrintOrder(null)}
+                  className="text-gray-400 hover:text-black font-bold text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between font-bold border-b border-gray-200 pb-1">
+                  <span>TRACKING NO:</span>
+                  <span className="font-mono text-sm">{selectedPrintOrder.orderId}</span>
+                </div>
+                <div className="border-b border-gray-200 pb-1">
+                  <span className="font-bold block text-gray-500 text-[10px]">CONSIGNEE (CUSTOMER):</span>
+                  <p className="font-bold text-sm">{selectedPrintOrder.customer.fullName}</p>
+                  <p className="font-semibold text-xs text-gray-800">{selectedPrintOrder.customer.phone}</p>
+                </div>
+                <div className="border-b border-gray-200 pb-1">
+                  <span className="font-bold block text-gray-500 text-[10px]">DESTINATION CITY & ADDRESS:</span>
+                  <p className="font-bold text-xs">{selectedPrintOrder.customer.city}</p>
+                  <p className="text-xs text-gray-700">{selectedPrintOrder.customer.address}</p>
+                </div>
+                <div className="border-b border-gray-200 pb-1">
+                  <span className="font-bold block text-gray-500 text-[10px]">PACKAGE CONTENTS:</span>
+                  <p className="font-semibold text-xs">{selectedPrintOrder.items?.[0]?.bundleTitle || "Roghan-e-Azam Hair Oil"}</p>
+                  {selectedPrintOrder.addMassager && <p className="text-[10px] text-emerald-700 font-bold">+ Neem Scalp Massager Comb</p>}
+                </div>
+                <div className="bg-gray-100 p-3 rounded-xl flex justify-between items-center text-sm font-black border border-gray-300">
+                  <span>COLLECT CASH (COD):</span>
+                  <span className="text-base font-extrabold text-[#0b2912]">Rs. {selectedPrintOrder.total?.toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 bg-black text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-gray-800 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-[#d4af37]" /> Print Thermal Slip
+                </button>
+                <button
+                  onClick={() => setSelectedPrintOrder(null)}
+                  className="px-4 bg-gray-200 text-gray-800 py-3 rounded-xl font-bold text-xs uppercase hover:bg-gray-300 cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         </main>
       </div>
     </div>

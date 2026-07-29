@@ -158,6 +158,53 @@ export default function Home() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewsList, setReviewsList] = useState(REVIEWS_DATA);
 
+  // Live Countdown Timer State (Urgency Boost)
+  const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 28, seconds: 45 });
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: 4, minutes: 28, seconds: 45 };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Sticky Mobile Order Bar State
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 450) {
+        setShowStickyBar(true);
+      } else {
+        setShowStickyBar(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Social Proof Order Toast Notifications State
+  const [activeToastIndex, setActiveToastIndex] = useState(0);
+  const [showToast, setShowToast] = useState(false);
+  const SOCIAL_PROOF_TOASTS = [
+    { name: "Fatima S.", city: "Lahore", item: "2 Bottles (Popular Pack)", time: "3 mins ago" },
+    { name: "Usman K.", city: "Karachi", item: "3 Bottles (Family Pack)", time: "7 mins ago" },
+    { name: "Zainab B.", city: "Islamabad", item: "2 Bottles (Popular Pack)", time: "12 mins ago" },
+    { name: "Ayesha M.", city: "Rawalpindi", item: "1 Bottle (Starter Pack)", time: "15 mins ago" }
+  ];
+
+  useEffect(() => {
+    const toastInterval = setInterval(() => {
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 4500);
+      setActiveToastIndex(prev => (prev + 1) % SOCIAL_PROOF_TOASTS.length);
+    }, 11000);
+    return () => clearInterval(toastInterval);
+  }, [SOCIAL_PROOF_TOASTS.length]);
+
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
   const { register: registerReview, handleSubmit: handleSubmitReview, reset: resetReviewForm } = useForm();
 
@@ -281,10 +328,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] font-sans selection:bg-[#d4af37]/20 selection:text-[#0b2912] overflow-x-hidden">
       
-      {/* ANNOUNCEMENT BAR */}
-      <div className="bg-[#0b2912] text-white text-xs py-2.5 px-4 text-center tracking-widest uppercase font-semibold flex items-center justify-center gap-2">
+      {/* ANNOUNCEMENT BAR WITH LIVE COUNTDOWN TIMER */}
+      <div className="bg-[#0b2912] text-white text-xs py-2.5 px-4 text-center tracking-widest uppercase font-semibold flex flex-wrap items-center justify-center gap-2 border-b border-[#d4af37]/20">
         <Flame className="w-4 h-4 text-[#d4af37] animate-pulse" />
-        <span>FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN</span>
+        <span>FLASH SALE: 40% OFF + FREE CASH ON DELIVERY</span>
+        <span className="bg-[#d4af37] text-[#0b2912] font-black px-2.5 py-0.5 rounded text-[11px] font-mono tracking-tight shadow-inner">
+          ENDS IN {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+        </span>
         <span className="hidden md:inline text-[#d4af37] font-bold">| USE CODE: ELIZA10 FOR EXTRA 10% OFF</span>
       </div>
 
@@ -1371,6 +1421,15 @@ export default function Home() {
                         </>
                       )}
                     </motion.button>
+
+                    <a
+                      href={`https://wa.me/923001234567?text=Hi%20Eliza%20Gold,%20I%20want%20to%20order%20${encodeURIComponent(cartItems[0]?.bundleTitle || "Roghan-e-Azam Hair Oil")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full mt-2.5 bg-[#25D366] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#1ebd59] transition-colors flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      <MessageCircle className="w-4 h-4" /> Fast Order via WhatsApp
+                    </a>
                   </div>
                 </form>
               )}
@@ -1537,6 +1596,58 @@ export default function Home() {
         <MessageCircle className="w-5 h-5" />
         <span className="hidden sm:inline">WhatsApp Order</span>
       </a>
+
+      {/* STICKY MOBILE ORDER BAR */}
+      <AnimatePresence>
+        {showStickyBar && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 z-40 bg-[#041207]/95 backdrop-blur-lg border-t border-[#d4af37]/40 p-3 sm:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.5)] flex items-center justify-between"
+          >
+            <div>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Eliza Gold Hair Oil</span>
+              <span className="text-sm font-extrabold text-[#f7e092]">Rs. {selectedBundle.price.toLocaleString()}</span>
+              <span className="text-[10px] text-gray-400 line-through ml-1.5">Rs. {selectedBundle.originalPrice.toLocaleString()}</span>
+            </div>
+            <button
+              onClick={() => handleBuyNow()}
+              className="bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] px-4 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer"
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-[#041207]" />
+              <span>Order Now</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* REAL-TIME SOCIAL PROOF ORDER TOAST */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ x: -100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -100, opacity: 0 }}
+            className="fixed bottom-20 sm:bottom-6 left-4 z-30 bg-white border-2 border-[#d4af37]/40 p-3.5 rounded-2xl shadow-2xl max-w-xs hidden sm:flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#0b2912] text-[#d4af37] flex items-center justify-center font-bold text-xs shrink-0">
+              🛍️
+            </div>
+            <div className="text-xs">
+              <p className="font-bold text-gray-900 leading-tight">
+                {SOCIAL_PROOF_TOASTS[activeToastIndex].name} <span className="font-normal text-gray-500">from {SOCIAL_PROOF_TOASTS[activeToastIndex].city}</span>
+              </p>
+              <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                Ordered {SOCIAL_PROOF_TOASTS[activeToastIndex].item}
+              </p>
+              <span className="text-[9px] text-gray-400 font-medium block mt-0.5">
+                Verified Purchase • {SOCIAL_PROOF_TOASTS[activeToastIndex].time}
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
