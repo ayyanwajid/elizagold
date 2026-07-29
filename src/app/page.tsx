@@ -616,8 +616,67 @@ export default function Home() {
               </p>
             </div>
 
-            {/* LUXURY COMPARISON SHOWCASE TABLE / GRID */}
-            <div className="overflow-x-auto pb-4">
+            {/* MOBILE COMPARISON CARDS (Visible on Mobile Screens) */}
+            <div className="block sm:hidden space-y-4">
+              {[
+                {
+                  icon: "🌿",
+                  title: "100% Pure Botanical Extracts",
+                  subtitle: "Cold-pressed Amla, Aloe Vera, Bhringraj, & Neem"
+                },
+                {
+                  icon: "🚫",
+                  title: "Zero Mineral Oil & Paraffin",
+                  subtitle: "No pores-clogging petroleum derivatives"
+                },
+                {
+                  icon: "⚡",
+                  title: "Proven 14-Day Hair Fall Control",
+                  subtitle: "Cleanses roots & stops shedding"
+                },
+                {
+                  icon: "🔬",
+                  title: "Dermatologically Safety Tested",
+                  subtitle: "Safe for all scalp types & dyed hair"
+                },
+                {
+                  icon: "🛡️",
+                  title: "7-Day Money Back Guarantee",
+                  subtitle: "Full refund assurance if unsatisfied"
+                }
+              ].map((item, idx) => (
+                <div key={idx} className="bg-white rounded-2xl border border-[#e7e1d5] p-4.5 shadow-sm space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl shrink-0">{item.icon}</span>
+                    <div>
+                      <h4 className="font-bold text-gray-900 text-sm leading-snug">{item.title}</h4>
+                      <p className="text-xs text-gray-500 font-normal mt-0.5">{item.subtitle}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-gray-100">
+                    <div className="bg-[#0b2912] text-white p-3 rounded-xl border border-[#d4af37]/40 text-center flex flex-col items-center justify-center">
+                      <span className="text-[9px] text-[#d4af37] font-extrabold uppercase tracking-wider block">Eliza Gold</span>
+                      <div className="flex items-center justify-center gap-1 mt-1 text-xs font-extrabold text-[#f7e092]">
+                        <Check className="w-4 h-4 text-[#f7e092] stroke-[3]" />
+                        <span>Included</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-gray-100 text-gray-500 p-3 rounded-xl border border-gray-200 text-center flex flex-col items-center justify-center">
+                      <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block">Ordinary Oils</span>
+                      <div className="flex items-center justify-center gap-1 mt-1 text-xs font-bold text-red-500">
+                        <X className="w-4 h-4 text-red-500 stroke-[2.5]" />
+                        <span>Missing</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* DESKTOP COMPARISON TABLE (Visible on Tablet & Desktop Screens) */}
+            <div className="hidden sm:block overflow-x-auto pb-4">
               <table className="w-full text-left border-collapse min-w-[640px]">
                 <thead>
                   <tr>
