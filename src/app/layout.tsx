@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import ConvexClientProvider from "./ConvexClientProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -58,7 +59,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#d4a300" />
       </head>
       <body className="antialiased bg-background text-foreground selection:bg-gold-300 selection:text-black">
-        {children}
+        <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
   );
