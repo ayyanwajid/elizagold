@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -26,6 +27,9 @@ import {
   Ban,
   Zap
 } from "lucide-react";
+
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 // --- TYPES & DATA ---
 interface CartItem {
@@ -282,6 +286,27 @@ export default function Home() {
     }
   };
 
+  // Convex Cloud Mutations & Queries (Prerender-safe)
+  const createOrderMutation = useMutation(api?.orders?.createOrder ? api.orders.createOrder : ("createOrder" as any));
+  const addReviewMutation = useMutation(api?.reviews?.addReview ? api.reviews.addReview : ("addReview" as any));
+  const convexReviews = useQuery(api?.reviews?.listReviews ? api.reviews.listReviews : ("listReviews" as any));
+
+  useEffect(() => {
+    if (convexReviews && Array.isArray(convexReviews) && convexReviews.length > 0) {
+      const formatted = convexReviews.map((r: any, idx: number) => ({
+        id: idx + 1,
+        name: r.name,
+        city: r.city,
+        rating: r.rating,
+        date: r.date,
+        title: r.title,
+        comment: r.comment,
+        verified: r.verified
+      }));
+      setReviewsList(formatted);
+    }
+  }, [convexReviews]);
+
   const handleCheckoutSubmit = async (data: FieldValues) => {
     await new Promise((resolve) => setTimeout(resolve, 1200));
     const orderDetails: OrderConfirmationDetails = {
@@ -299,7 +324,7 @@ export default function Home() {
       estimatedDelivery: "2 to 3 Business Days"
     };
 
-    // Save to localStorage for Admin Dashboard
+    // Save to localStorage for fallback
     try {
       const existing = JSON.parse(localStorage.getItem("eliza_orders_list") || "[]");
       const updated = [{ ...orderDetails, status: "Pending" }, ...existing];
@@ -308,24 +333,60 @@ export default function Home() {
       // fallback
     }
 
+    // Sync live to Convex Cloud
+    try {
+      if (createOrderMutation) {
+        await createOrderMutation({
+          orderId: orderDetails.orderId,
+          customer: orderDetails.customer,
+          items: orderDetails.items,
+          addMassager: orderDetails.addMassager,
+          total: orderDetails.total,
+          status: "Pending",
+          date: orderDetails.date,
+          estimatedDelivery: orderDetails.estimatedDelivery
+        });
+      }
+    } catch (err) {
+      console.log("Convex cloud order save offline fallback:", err);
+    }
+
     setOrderConfirmed(orderDetails);
     setCartItems([]);
   };
 
-  const handleReviewSubmit = (data: FieldValues) => {
+  const handleReviewSubmit = async (data: FieldValues) => {
     const newRev = {
       id: Date.now(),
-      name: data.name || "Anonymous",
-      city: data.city || "Pakistan",
+      name: String(data.name || "Anonymous"),
+      city: String(data.city || "Pakistan"),
       rating: Number(data.rating) || 5,
       date: "Just now",
-      title: data.title || "Great Product",
-      comment: data.comment,
+      title: String(data.title || "Great Product"),
+      comment: String(data.comment || ""),
       verified: true
     };
+
     setReviewsList([newRev, ...reviewsList]);
     setReviewModalOpen(false);
     resetReviewForm();
+
+    // Sync live to Convex Cloud
+    try {
+      if (addReviewMutation) {
+        await addReviewMutation({
+          name: newRev.name,
+          city: newRev.city,
+          rating: newRev.rating,
+          date: newRev.date,
+          title: newRev.title,
+          comment: newRev.comment,
+          verified: newRev.verified
+        });
+      }
+    } catch (err) {
+      console.log("Convex cloud review save offline fallback:", err);
+    }
   };
 
   return (

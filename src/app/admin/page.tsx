@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -23,9 +24,13 @@ import {
   MessageCircle
 } from "lucide-react";
 
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+
 type TabType = "overview" | "orders" | "products" | "coupons" | "settings";
 
 interface AdminOrder {
+  _id?: string;
   orderId: string;
   customer: {
     fullName: string;
@@ -154,11 +159,39 @@ export default function AdminDashboard() {
     localStorage.removeItem("eliza_admin_auth");
   };
 
-  // Update order status
-  const updateOrderStatus = (orderId: string, newStatus: string) => {
+  // Convex Real-Time Database Subscription & Mutation (Prerender-safe)
+  const convexOrders = useQuery(api?.orders?.listOrders ? api.orders.listOrders : ("listOrders" as any));
+  const updateOrderStatusMutation = useMutation(api?.orders?.updateOrderStatus ? api.orders.updateOrderStatus : ("updateOrderStatus" as any));
+
+  useEffect(() => {
+    if (convexOrders && Array.isArray(convexOrders) && convexOrders.length > 0) {
+      const formatted: AdminOrder[] = convexOrders.map((o: any) => ({
+        _id: o._id,
+        orderId: o.orderId,
+        customer: o.customer,
+        items: o.items,
+        addMassager: o.addMassager,
+        total: o.total,
+        date: o.date,
+        status: o.status
+      }));
+      setOrders(formatted);
+    }
+  }, [convexOrders]);
+
+  // Update order status (Syncs to Convex Cloud + Local Storage)
+  const updateOrderStatus = async (orderId: string, newStatus: string, docId?: string) => {
     const updated = orders.map(o => o.orderId === orderId ? { ...o, status: newStatus } : o);
     setOrders(updated);
     localStorage.setItem("eliza_orders_list", JSON.stringify(updated));
+
+    try {
+      if (docId && updateOrderStatusMutation) {
+        await updateOrderStatusMutation({ id: docId as any, status: newStatus });
+      }
+    } catch {
+      // Local fallback handled smoothly
+    }
   };
 
   // Export to CSV
@@ -499,7 +532,7 @@ export default function AdminDashboard() {
                           <td className="py-4 px-4 flex items-center gap-2">
                             <select
                               value={o.status || "Pending"}
-                              onChange={(e) => updateOrderStatus(o.orderId, e.target.value)}
+                              onChange={(e) => updateOrderStatus(o.orderId, e.target.value, o._id)}
                               className={`px-2.5 py-1.5 text-xs rounded-lg font-bold outline-none border transition-colors cursor-pointer ${
                                 o.status === "Delivered" ? "bg-emerald-100 text-emerald-800 border-emerald-300" :
                                 o.status === "Dispatched" ? "bg-blue-100 text-blue-800 border-blue-300" :
