@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -159,9 +161,9 @@ export default function AdminDashboard() {
     localStorage.removeItem("eliza_admin_auth");
   };
 
-  // Convex Real-Time Database Subscription & Mutation (Prerender-safe)
-  const convexOrders = useQuery(api?.orders?.listOrders ? api.orders.listOrders : ("listOrders" as any));
-  const updateOrderStatusMutation = useMutation(api?.orders?.updateOrderStatus ? api.orders.updateOrderStatus : ("updateOrderStatus" as any));
+  // Convex Real-Time Database Subscription & Mutation
+  const convexOrders = useQuery(api.orders.listOrders);
+  const updateOrderStatusMutation = useMutation(api.orders.updateOrderStatus);
 
   useEffect(() => {
     if (convexOrders && Array.isArray(convexOrders) && convexOrders.length > 0) {

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
@@ -286,10 +288,10 @@ export default function Home() {
     }
   };
 
-  // Convex Cloud Mutations & Queries (Prerender-safe)
-  const createOrderMutation = useMutation(api?.orders?.createOrder ? api.orders.createOrder : ("createOrder" as any));
-  const addReviewMutation = useMutation(api?.reviews?.addReview ? api.reviews.addReview : ("addReview" as any));
-  const convexReviews = useQuery(api?.reviews?.listReviews ? api.reviews.listReviews : ("listReviews" as any));
+  // Convex Cloud Mutations & Queries
+  const createOrderMutation = useMutation(api.orders.createOrder);
+  const addReviewMutation = useMutation(api.reviews.addReview);
+  const convexReviews = useQuery(api.reviews.listReviews);
 
   useEffect(() => {
     if (convexReviews && Array.isArray(convexReviews) && convexReviews.length > 0) {
