@@ -21,7 +21,10 @@ import {
   RotateCcw,
   Award,
   Check,
-  Flame
+  Flame,
+  XCircle,
+  Ban,
+  Zap
 } from "lucide-react";
 
 // --- TYPES & DATA ---
@@ -620,34 +623,36 @@ export default function Home() {
             <div className="block sm:hidden space-y-4">
               {[
                 {
-                  icon: "🌿",
+                  icon: <Leaf className="w-6 h-6 text-emerald-600" />,
                   title: "100% Pure Botanical Extracts",
                   subtitle: "Cold-pressed Amla, Aloe Vera, Bhringraj, & Neem"
                 },
                 {
-                  icon: "🚫",
+                  icon: <Ban className="w-6 h-6 text-emerald-600" />,
                   title: "Zero Mineral Oil & Paraffin",
                   subtitle: "No pores-clogging petroleum derivatives"
                 },
                 {
-                  icon: "⚡",
+                  icon: <Zap className="w-6 h-6 text-amber-500" />,
                   title: "Proven 14-Day Hair Fall Control",
                   subtitle: "Cleanses roots & stops shedding"
                 },
                 {
-                  icon: "🔬",
+                  icon: <Sparkles className="w-6 h-6 text-[#d4af37]" />,
                   title: "Dermatologically Safety Tested",
                   subtitle: "Safe for all scalp types & dyed hair"
                 },
                 {
-                  icon: "🛡️",
+                  icon: <ShieldCheck className="w-6 h-6 text-emerald-600" />,
                   title: "7-Day Money Back Guarantee",
                   subtitle: "Full refund assurance if unsatisfied"
                 }
               ].map((item, idx) => (
                 <div key={idx} className="bg-white rounded-2xl border border-[#e7e1d5] p-4.5 shadow-sm space-y-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl shrink-0">{item.icon}</span>
+                    <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
+                      {item.icon}
+                    </div>
                     <div>
                       <h4 className="font-bold text-gray-900 text-sm leading-snug">{item.title}</h4>
                       <p className="text-xs text-gray-500 font-normal mt-0.5">{item.subtitle}</p>
@@ -657,16 +662,16 @@ export default function Home() {
                   <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-gray-100">
                     <div className="bg-[#0b2912] text-white p-3 rounded-xl border border-[#d4af37]/40 text-center flex flex-col items-center justify-center">
                       <span className="text-[9px] text-[#d4af37] font-extrabold uppercase tracking-wider block">Eliza Gold</span>
-                      <div className="flex items-center justify-center gap-1 mt-1 text-xs font-extrabold text-[#f7e092]">
-                        <Check className="w-4 h-4 text-[#f7e092] stroke-[3]" />
+                      <div className="flex items-center justify-center gap-1.5 mt-1 text-xs font-extrabold text-[#f7e092]">
+                        <CheckCircle2 className="w-4 h-4 text-[#f7e092]" />
                         <span>Included</span>
                       </div>
                     </div>
 
                     <div className="bg-gray-100 text-gray-500 p-3 rounded-xl border border-gray-200 text-center flex flex-col items-center justify-center">
                       <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block">Ordinary Oils</span>
-                      <div className="flex items-center justify-center gap-1 mt-1 text-xs font-bold text-red-500">
-                        <X className="w-4 h-4 text-red-500 stroke-[2.5]" />
+                      <div className="flex items-center justify-center gap-1.5 mt-1 text-xs font-bold text-red-500">
+                        <XCircle className="w-4 h-4 text-red-500" />
                         <span>Missing</span>
                       </div>
                     </div>
@@ -708,20 +713,22 @@ export default function Home() {
                   {/* Row 1 */}
                   <tr className="bg-white hover:bg-emerald-50/40 transition-colors">
                     <td className="py-5 px-6 font-bold text-gray-800 flex items-center gap-3">
-                      <span className="text-xl">🌿</span>
+                      <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
+                        <Leaf className="w-5 h-5 text-emerald-700" />
+                      </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">100% Pure Botanical Extracts</p>
                         <p className="text-[11px] text-gray-500 font-normal">Amla, Aloe Vera, Bhringraj, Neem</p>
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-[#0b2912] text-white border-x-2 border-[#d4af37] shadow-sm">
-                      <div className="w-8 h-8 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
-                        <Check className="w-5 h-5 stroke-[3]" />
+                      <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
+                        <CheckCircle2 className="w-5 h-5 text-[#f7e092]" />
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-gray-50/60 border-x border-gray-200">
-                      <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
-                        <X className="w-4 h-4 stroke-[2.5]" />
+                      <div className="w-9 h-9 rounded-full bg-red-50 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
+                        <XCircle className="w-5 h-5 text-red-500" />
                       </div>
                     </td>
                   </tr>
@@ -729,20 +736,22 @@ export default function Home() {
                   {/* Row 2 */}
                   <tr className="bg-white hover:bg-emerald-50/40 transition-colors">
                     <td className="py-5 px-6 font-bold text-gray-800 flex items-center gap-3">
-                      <span className="text-xl">🚫</span>
+                      <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
+                        <Ban className="w-5 h-5 text-emerald-700" />
+                      </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">Zero Mineral Oil & Liquid Paraffin</p>
                         <p className="text-[11px] text-gray-500 font-normal">No pores-clogging petroleum derivatives</p>
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-[#0b2912] text-white border-x-2 border-[#d4af37] shadow-sm">
-                      <div className="w-8 h-8 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
-                        <Check className="w-5 h-5 stroke-[3]" />
+                      <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
+                        <CheckCircle2 className="w-5 h-5 text-[#f7e092]" />
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-gray-50/60 border-x border-gray-200 text-gray-400">
-                      <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
-                        <X className="w-4 h-4 stroke-[2.5]" />
+                      <div className="w-9 h-9 rounded-full bg-red-50 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
+                        <XCircle className="w-5 h-5 text-red-500" />
                       </div>
                     </td>
                   </tr>
@@ -750,20 +759,22 @@ export default function Home() {
                   {/* Row 3 */}
                   <tr className="bg-white hover:bg-emerald-50/40 transition-colors">
                     <td className="py-5 px-6 font-bold text-gray-800 flex items-center gap-3">
-                      <span className="text-xl">⚡</span>
+                      <div className="p-2 rounded-xl bg-amber-50 border border-amber-100 shrink-0">
+                        <Zap className="w-5 h-5 text-amber-600" />
+                      </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">Proven 14-Day Hair Fall Control</p>
                         <p className="text-[11px] text-gray-500 font-normal">Cleanses roots & stops shedding</p>
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-[#0b2912] text-white border-x-2 border-[#d4af37] shadow-sm">
-                      <div className="w-8 h-8 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
-                        <Check className="w-5 h-5 stroke-[3]" />
+                      <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
+                        <CheckCircle2 className="w-5 h-5 text-[#f7e092]" />
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-gray-50/60 border-x border-gray-200 text-gray-400">
-                      <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
-                        <X className="w-4 h-4 stroke-[2.5]" />
+                      <div className="w-9 h-9 rounded-full bg-red-50 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
+                        <XCircle className="w-5 h-5 text-red-500" />
                       </div>
                     </td>
                   </tr>
@@ -771,20 +782,22 @@ export default function Home() {
                   {/* Row 4 */}
                   <tr className="bg-white hover:bg-emerald-50/40 transition-colors">
                     <td className="py-5 px-6 font-bold text-gray-800 flex items-center gap-3">
-                      <span className="text-xl">🔬</span>
+                      <div className="p-2 rounded-xl bg-[#d4af37]/10 border border-[#d4af37]/20 shrink-0">
+                        <Sparkles className="w-5 h-5 text-[#d4af37]" />
+                      </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">Dermatologically Safety Tested</p>
                         <p className="text-[11px] text-gray-500 font-normal">Safe for all scalp types & dyed hair</p>
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-[#0b2912] text-white border-x-2 border-[#d4af37] shadow-sm">
-                      <div className="w-8 h-8 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
-                        <Check className="w-5 h-5 stroke-[3]" />
+                      <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
+                        <CheckCircle2 className="w-5 h-5 text-[#f7e092]" />
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-gray-50/60 border-x border-gray-200 text-gray-400">
-                      <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
-                        <X className="w-4 h-4 stroke-[2.5]" />
+                      <div className="w-9 h-9 rounded-full bg-red-50 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
+                        <XCircle className="w-5 h-5 text-red-500" />
                       </div>
                     </td>
                   </tr>
@@ -792,20 +805,22 @@ export default function Home() {
                   {/* Row 5 */}
                   <tr className="bg-white hover:bg-emerald-50/40 transition-colors">
                     <td className="py-5 px-6 font-bold text-gray-800 flex items-center gap-3">
-                      <span className="text-xl">🛡️</span>
+                      <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100 shrink-0">
+                        <ShieldCheck className="w-5 h-5 text-emerald-700" />
+                      </div>
                       <div>
                         <p className="font-bold text-gray-900 text-sm">7-Day Money Back Quality Assurance</p>
                         <p className="text-[11px] text-gray-500 font-normal">Full refund guarantee if unsatisfied</p>
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-[#0b2912] text-white border-x-2 border-b-2 border-[#d4af37] rounded-b-2xl shadow-xl">
-                      <div className="w-8 h-8 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
-                        <Check className="w-5 h-5 stroke-[3]" />
+                      <div className="w-9 h-9 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#f7e092] flex items-center justify-center mx-auto shadow-md">
+                        <CheckCircle2 className="w-5 h-5 text-[#f7e092]" />
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-gray-50/60 border-x border-b border-gray-200 rounded-b-2xl text-gray-400">
-                      <div className="w-8 h-8 rounded-full bg-red-100 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
-                        <X className="w-4 h-4 stroke-[2.5]" />
+                      <div className="w-9 h-9 rounded-full bg-red-50 border border-red-200 text-red-500 flex items-center justify-center mx-auto">
+                        <XCircle className="w-5 h-5 text-red-500" />
                       </div>
                     </td>
                   </tr>
