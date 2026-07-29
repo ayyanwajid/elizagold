@@ -400,15 +400,16 @@ export default function Home() {
                   priority
                 />
                 
-                {/* Ultra-Luxury Glassmorphism Floating Trust Badges */}
-                <div className="absolute top-3 left-3 sm:top-4 sm:left-4 flex flex-row flex-wrap gap-1.5 sm:gap-2 z-10 max-w-[90%]">
-                  <span className="bg-[#041207]/85 backdrop-blur-md text-[#fff3b0] border border-[#d4af37]/40 shadow-[0_4px_14px_rgba(0,0,0,0.35)] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1 sm:gap-1.5">
-                    <Leaf className="w-3 h-3 text-[#d4af37]" /> 100% Original Herbal
-                  </span>
-                  <span className="bg-[#041207]/85 backdrop-blur-md text-[#d4af37] border border-[#d4af37]/40 shadow-[0_4px_14px_rgba(0,0,0,0.35)] text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full flex items-center gap-1 sm:gap-1.5">
-                    <Sparkles className="w-3 h-3 text-[#f7e092]" /> Ayurvedic Formula
-                  </span>
-                </div>
+              </div>
+
+              {/* Mobile Non-Overlapping Trust Badges Row */}
+              <div className="flex sm:hidden items-center justify-center gap-2 pt-1">
+                <span className="bg-[#0b2912] text-[#fff3b0] border border-[#d4af37]/40 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                  <Leaf className="w-3.5 h-3.5 text-[#d4af37]" /> 100% Original Herbal
+                </span>
+                <span className="bg-[#0b2912] text-[#f7e092] border border-[#d4af37]/40 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm">
+                  <Sparkles className="w-3.5 h-3.5 text-[#f7e092]" /> Ayurvedic Formula
+                </span>
               </div>
 
               {/* Thumbnails Picker */}
@@ -460,6 +461,15 @@ export default function Home() {
               
               {/* Title & Rating */}
               <div>
+                <div className="hidden sm:flex items-center gap-2 mb-3">
+                  <span className="bg-[#0b2912] text-[#fff3b0] border border-[#d4af37]/40 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+                    <Leaf className="w-3.5 h-3.5 text-[#d4af37]" /> 100% Original Herbal
+                  </span>
+                  <span className="bg-[#0b2912] text-[#f7e092] border border-[#d4af37]/40 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+                    <Sparkles className="w-3.5 h-3.5 text-[#f7e092]" /> Ayurvedic Formula
+                  </span>
+                </div>
+
                 <div className="flex items-center gap-2 mb-2">
                   <div className="flex text-amber-400">
                     {[...Array(5)].map((_, i) => (
