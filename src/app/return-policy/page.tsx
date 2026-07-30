@@ -84,12 +84,12 @@ export default function ReturnPolicyPage() {
             </p>
             <div className="bg-[#0b2912]/5 border border-[#0b2912]/15 p-4 rounded-xl space-y-2">
               <a 
-                href="https://wa.me/923001234567?text=Hi%20Eliza%20Gold%2C%20I%20want%20to%20request%20a%20return%2Fexchange" 
+                href="https://wa.me/923287657890?text=Hi%20Eliza%20Gold%2C%20I%20want%20to%20request%20a%20return%2Fexchange" 
                 target="_blank" 
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 bg-[#25D366] text-white px-4 py-2 rounded-xl text-xs font-bold shadow hover:brightness-105 transition-all"
               >
-                <MessageCircle className="w-4 h-4 fill-current" /> Contact WhatsApp Support: +92 300 1234567
+                <MessageCircle className="w-4 h-4 fill-current" /> Contact WhatsApp Support: +92 328 7657890
               </a>
               <p className="text-xs text-gray-600">Our customer care agent will guide you step-by-step and arrange your replacement parcel.</p>
             </div>

@@ -93,7 +93,7 @@ export default function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="font-serif text-xl font-bold text-[#0b2912]">4. Contact & Customer Care</h2>
             <div className="bg-[#0b2912]/5 border border-[#0b2912]/15 p-4 rounded-xl space-y-1 font-medium text-gray-800">
-              <p>💬 <strong>WhatsApp Helpline:</strong> +92 300 1234567</p>
+              <p>💬 <strong>WhatsApp Helpline:</strong> +92 328 7657890</p>
               <p>📧 <strong>Email Support:</strong> support@elizagold.pk</p>
             </div>
           </section>

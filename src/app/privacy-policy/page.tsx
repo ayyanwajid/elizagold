@@ -106,7 +106,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="bg-[#0b2912]/5 border border-[#0b2912]/15 p-4 rounded-xl space-y-1 font-medium text-gray-800">
               <p>📍 <strong>Hubs:</strong> Lahore, Karachi, Islamabad (Pakistan)</p>
-              <p>💬 <strong>WhatsApp Helpline:</strong> +92 300 1234567</p>
+              <p>💬 <strong>WhatsApp Helpline:</strong> +92 328 7657890</p>
               <p>📧 <strong>Email Support:</strong> support@elizagold.pk</p>
             </div>
           </section>

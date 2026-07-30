@@ -57,7 +57,7 @@ export default function ContactPage() {
             
             {/* WhatsApp Card */}
             <a 
-              href="https://wa.me/923001234567?text=Hi%20Eliza%20Gold%2C%20I%20have%20a%20question" 
+              href="https://wa.me/923287657890?text=Hi%20Eliza%20Gold%2C%20I%20have%20a%20question" 
               target="_blank" 
               rel="noreferrer"
               className="block bg-gradient-to-br from-[#0b2912] to-[#041207] text-white p-6 rounded-2xl border border-[#d4af37]/40 shadow-md hover:scale-[1.02] transition-transform group"
@@ -68,7 +68,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-[#f7e092] text-sm group-hover:underline">Instant WhatsApp Care</h3>
-                  <p className="text-sm font-extrabold text-white mt-0.5">+92 300 1234567</p>
+                  <p className="text-sm font-extrabold text-white mt-0.5">+92 328 7657890</p>
                   <p className="text-[11px] text-gray-300">Click to chat instantly on WhatsApp</p>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default function ContactPage() {
                     <input 
                       type="tel" 
                       required 
-                      placeholder="0300 1234567" 
+                      placeholder="0328 7657890" 
                       className="w-full px-4 py-3 bg-[#faf8f5] border border-[#e7e1d5] rounded-xl outline-none focus:border-[#0b2912]"
                     />
                   </div>

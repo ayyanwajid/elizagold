@@ -133,7 +133,7 @@ export default function AdminDashboard() {
 
   // Store Settings State
   const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
-  const [whatsappNumber, setWhatsappNumber] = useState("+923001234567");
+  const [whatsappNumber, setWhatsappNumber] = useState("+923287657890");
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // ── CONVEX LIVE SUBSCRIPTIONS ──────────────────────────────────────────
@@ -969,8 +969,8 @@ export default function AdminDashboard() {
 
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Customer WhatsApp Number</label>
-                  <input type="text" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="+923001234567" className="w-full px-3 py-2.5 text-xs border border-gray-300 rounded-xl font-medium focus:border-[#0b2912] outline-none" />
-                  <p className="text-[10px] text-gray-400 mt-1">Format: +923001234567 (no spaces or dashes)</p>
+                  <input type="text" value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="+923287657890" className="w-full px-3 py-2.5 text-xs border border-gray-300 rounded-xl font-medium focus:border-[#0b2912] outline-none" />
+                  <p className="text-[10px] text-gray-400 mt-1">Format: +923287657890 (no spaces or dashes)</p>
                 </div>
 
                 <div>

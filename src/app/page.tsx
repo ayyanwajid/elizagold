@@ -143,7 +143,7 @@ export default function Home() {
   const [selectedImage, setSelectedImage] = useState(0);
   // Admin-configurable settings (synced from /admin via localStorage)
   const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
-  const [whatsappNumber, setWhatsappNumber] = useState("+923001234567");
+  const [whatsappNumber, setWhatsappNumber] = useState("+923287657890");
   const [activeCoupons, setActiveCoupons] = useState<Array<{code: string; discountValue: number; type: string; active: boolean}>>([{ code: "ELIZA10", discountValue: 10, type: "Percentage", active: true }]);
   const [bundleOptions, setBundleOptions] = useState(BASE_BUNDLE_OPTIONS);
   const [selectedBundle, setSelectedBundle] = useState(BASE_BUNDLE_OPTIONS[1]);
@@ -1339,7 +1339,7 @@ export default function Home() {
                 className="inline-flex items-center gap-2 text-emerald-400 font-bold hover:underline bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-lg"
               >
                 <MessageCircle className="w-4 h-4 fill-current" />
-                <span>WhatsApp: +92 300 1234567</span>
+                <span>WhatsApp: +92 328 7657890</span>
               </a>
               <p className="text-gray-300"><strong>Email:</strong> support@elizagold.pk</p>
               <p className="text-gray-300"><strong>Operating Hours:</strong> Mon – Sat (9:00 AM – 9:00 PM PKT)</p>
