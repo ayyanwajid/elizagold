@@ -252,13 +252,21 @@ export default function Home() {
   const { register: registerReview, handleSubmit: handleSubmitReview, reset: resetReviewForm } = useForm();
 
   const galleryImages = [
-    "/assets/eliza-gold-combo-100ml.png",
-    "/assets/eliza-gold-bottle-100ml.png",
-    "/assets/eliza-gold-box-100ml.png",
-    "/assets/product-3.png",
-    "/assets/product-4.png",
-    "/assets/product-5.png"
+    "/assets/eliza-gold-combo-100ml.webp",
+    "/assets/eliza-gold-bottle-100ml.webp",
+    "/assets/eliza-gold-box-100ml.webp",
+    "/assets/product-3.webp",
+    "/assets/product-4.webp",
+    "/assets/product-5.webp"
   ];
+
+  // Preload gallery images in browser memory for 0ms instant thumbnail switching
+  useEffect(() => {
+    galleryImages.forEach((src) => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, []);
 
   // Initialize Lenis smooth scroll
   useEffect(() => {
@@ -494,16 +502,22 @@ export default function Home() {
             <div className="lg:col-span-7 space-y-4">
               {/* Main Image Frame */}
               <div className="relative aspect-[4/5] sm:aspect-square w-full rounded-2xl bg-white border border-[#e7e1d5] overflow-hidden shadow-sm group">
-                <Image
-                  src={galleryImages[selectedImage]}
-                  alt="Roghan-e-Azam Misali Hair Oil"
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 650px"
-                  quality={85}
-                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-                  priority
-                />
-                
+                {galleryImages.map((imgSrc, idx) => (
+                  <Image
+                    key={imgSrc}
+                    src={imgSrc}
+                    alt={`Roghan-e-Azam Misali Hair Oil View ${idx + 1}`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 650px"
+                    quality={90}
+                    priority={idx === 0}
+                    className={`object-contain p-4 group-hover:scale-105 transition-all duration-200 ease-out ${
+                      selectedImage === idx
+                        ? "opacity-100 z-10 scale-100"
+                        : "opacity-0 z-0 scale-95 pointer-events-none absolute inset-0"
+                    }`}
+                  />
+                ))}
               </div>
 
               {/* Mobile Non-Overlapping Trust Badges Row */}

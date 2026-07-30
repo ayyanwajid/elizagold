@@ -302,7 +302,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen bg-gradient-to-b from-[#041207] via-[#0b2912] to-[#041207] text-white flex items-center justify-center p-4 font-sans">
         <div className="bg-black/60 backdrop-blur-xl border border-[#d4af37]/40 p-8 sm:p-10 rounded-3xl max-w-md w-full shadow-[0_0_50px_rgba(212,175,55,0.2)] text-center space-y-6">
           <div className="w-16 h-16 rounded-full bg-black/60 border-2 border-[#d4af37] shadow-[0_0_20px_rgba(212,175,55,0.5)] mx-auto flex items-center justify-center p-1">
-            <Image src="/assets/logo-icon.png" alt="Eliza Gold" width={100} height={100} className="w-full h-full object-cover mix-blend-screen" />
+            <Image src="/assets/logo-icon.webp" alt="Eliza Gold" width={100} height={100} className="w-full h-full object-cover mix-blend-screen" />
           </div>
           <div>
             <h1 className="font-serif text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0]">
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
       <header className="bg-gradient-to-r from-[#041207] via-[#0b2912] to-[#041207] text-white px-4 sm:px-6 py-3.5 flex items-center justify-between border-b border-[#d4af37]/30 shadow-md sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full border border-[#d4af37] bg-black/40 overflow-hidden flex items-center justify-center p-0.5">
-            <Image src="/assets/logo-icon.png" alt="Logo" width={50} height={50} className="w-full h-full object-cover mix-blend-screen" />
+            <Image src="/assets/logo-icon.webp" alt="Logo" width={50} height={50} className="w-full h-full object-cover mix-blend-screen" />
           </div>
           <div>
             <h1 className="font-serif font-bold text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0] leading-none">
