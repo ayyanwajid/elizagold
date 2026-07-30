@@ -334,13 +334,13 @@ export default function Home() {
     if (convexReviews && Array.isArray(convexReviews) && convexReviews.length > 0) {
       const formatted = convexReviews.map((r: any, idx: number) => ({
         id: idx + 1,
-        name: r.name,
-        city: r.city,
-        rating: r.rating,
-        date: r.date,
-        title: r.title,
-        comment: r.comment,
-        verified: r.verified
+        name: r.name || "Anonymous",
+        city: r.city || "Pakistan",
+        rating: Number(r.rating) || 5,
+        date: r.date || "Just now",
+        title: r.title || "Review",
+        comment: r.comment || "",
+        verified: !!r.verified
       }));
       setReviewsList(formatted);
     }
@@ -982,7 +982,6 @@ export default function Home() {
                     width={700}
                     height={1000}
                     className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
-                    priority
                   />
                   {/* Luxury Floating Glass Badges */}
                   <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md border border-[#d4af37]/40 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg">
@@ -1188,7 +1187,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-9 h-9 rounded-full bg-[#0b2912] text-white font-bold flex items-center justify-center text-sm">
-                        {rev.name[0]}
+                        {rev.name ? rev.name[0] : "U"}
                       </div>
                       <div>
                         <h4 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
@@ -1203,7 +1202,7 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="flex text-amber-400">
-                      {[...Array(rev.rating)].map((_, i) => (
+                      {[...Array(Math.max(0, Math.min(5, Number(rev.rating) || 5)))].map((_, i) => (
                         <Star key={i} className="w-4 h-4 fill-current" />
                       ))}
                     </div>
