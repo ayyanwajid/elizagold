@@ -252,9 +252,9 @@ export default function Home() {
   const { register: registerReview, handleSubmit: handleSubmitReview, reset: resetReviewForm } = useForm();
 
   const galleryImages = [
-    "/assets/eliza-gold-box-100ml.png",
     "/assets/eliza-gold-combo-100ml.png",
     "/assets/eliza-gold-bottle-100ml.png",
+    "/assets/eliza-gold-box-100ml.png",
     "/assets/product-3.png",
     "/assets/product-4.png",
     "/assets/product-5.png"
