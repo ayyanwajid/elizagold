@@ -252,12 +252,12 @@ export default function Home() {
   const { register: registerReview, handleSubmit: handleSubmitReview, reset: resetReviewForm } = useForm();
 
   const galleryImages = [
-    "/assets/product-1.png",
-    "/assets/product-2.png",
+    "/assets/eliza-gold-box-100ml.png",
+    "/assets/eliza-gold-combo-100ml.png",
+    "/assets/eliza-gold-bottle-100ml.png",
     "/assets/product-3.png",
     "/assets/product-4.png",
-    "/assets/product-5.png",
-    "/assets/product-6.png"
+    "/assets/product-5.png"
   ];
 
   // Initialize Lenis smooth scroll
@@ -590,7 +590,7 @@ export default function Home() {
                   Roghan-e-Azam Misali Hair Oil
                 </h1>
                 <p className="text-sm text-gray-600 mt-1.5 font-medium">
-                  200ml Premium Botanical Scalp & Hair Growth Remedy
+                  100ml Original Botanical Scalp & Hair Growth Remedy
                 </p>
               </div>
 
