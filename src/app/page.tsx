@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm, FieldValues } from "react-hook-form";
 import Lenis from "lenis";
@@ -1318,9 +1319,9 @@ export default function Home() {
             </h4>
             <ul className="space-y-2 text-xs text-gray-300">
               <li><a href="#product-buy" className="hover:text-[#d4af37] transition-colors">Order Now</a></li>
-              <li><a href="#ingredients" className="hover:text-[#d4af37] transition-colors">Botanical Ingredients</a></li>
-              <li><a href="#benefits" className="hover:text-[#d4af37] transition-colors">Why We Are Different</a></li>
-              <li><a href="#reviews" className="hover:text-[#d4af37] transition-colors">Customer Reviews</a></li>
+              <li><Link href="/shipping-policy" className="hover:text-[#d4af37] transition-colors">Shipping Policy</Link></li>
+              <li><Link href="/return-policy" className="hover:text-[#d4af37] transition-colors">Return Policy</Link></li>
+              <li><Link href="/contact" className="hover:text-[#d4af37] transition-colors">Contact Support</Link></li>
               <li><a href="#faq" className="hover:text-[#d4af37] transition-colors">Frequently Asked Questions</a></li>
             </ul>
           </div>
@@ -1371,11 +1372,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 relative z-10">
           <p>© {new Date().getFullYear()} Eliza Gold Pakistan. All rights reserved.</p>
           <div className="flex items-center gap-4 text-gray-400 text-[11px]">
-            <a href="#product-buy" className="hover:text-[#d4af37] transition-colors">Privacy Policy</a>
+            <Link href="/privacy-policy" className="hover:text-[#d4af37] transition-colors">Privacy Policy</Link>
             <span>•</span>
-            <a href="#product-buy" className="hover:text-[#d4af37] transition-colors">Terms of Service</a>
+            <Link href="/terms-of-service" className="hover:text-[#d4af37] transition-colors">Terms of Service</Link>
             <span>•</span>
-            <a href="#product-buy" className="hover:text-[#d4af37] transition-colors">Return Policy</a>
+            <Link href="/return-policy" className="hover:text-[#d4af37] transition-colors">Return Policy</Link>
+            <span>•</span>
+            <Link href="/shipping-policy" className="hover:text-[#d4af37] transition-colors">Shipping Policy</Link>
           </div>
         </div>
       </footer>
