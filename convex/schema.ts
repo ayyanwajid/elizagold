@@ -43,4 +43,27 @@ export default defineSchema({
     createdAt: v.number(),
     expiresAt: v.number(),
   }).index("by_token", ["token"]),
+
+  // Singleton row: storefront banner/pricing/shipping config, editable from
+  // the admin dashboard so changes reach every visitor, not just localStorage
+  // on the admin's own browser.
+  storeSettings: defineTable({
+    announcementText: v.string(),
+    whatsappNumber: v.string(),
+    productPrices: v.object({
+      bottle1: v.number(),
+      bottle2: v.number(),
+      bottle3: v.number(),
+    }),
+    freeDeliverySiteWide: v.boolean(),
+    singleBottleShippingFee: v.number(),
+  }),
+
+  coupons: defineTable({
+    code: v.string(),
+    discount: v.string(),
+    discountValue: v.number(),
+    type: v.string(), // "Percentage" | "Shipping" | "Custom"
+    active: v.boolean(),
+  }),
 });

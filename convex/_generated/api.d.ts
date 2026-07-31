@@ -9,9 +9,11 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as coupons from "../coupons.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as orders from "../orders.js";
 import type * as reviews from "../reviews.js";
+import type * as settings from "../settings.js";
 
 import type {
   ApiFromModules,
@@ -21,9 +23,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  coupons: typeof coupons;
   "lib/auth": typeof lib_auth;
   orders: typeof orders;
   reviews: typeof reviews;
+  settings: typeof settings;
 }>;
 
 /**

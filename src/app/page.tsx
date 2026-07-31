@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -138,43 +138,34 @@ const REVIEWS_DATA = [
   }
 ];
 
+interface CouponDoc { _id: string; code: string; discount: string; discountValue: number; type: string; active: boolean; }
+
 export default function Home() {
   // State Management
   const [selectedImage, setSelectedImage] = useState(0);
-  // Admin-configurable settings (synced from /admin via localStorage)
-  const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
-  const [whatsappNumber, setWhatsappNumber] = useState("+923287657890");
-  const [activeCoupons, setActiveCoupons] = useState<Array<{code: string; discountValue: number; type: string; active: boolean}>>([{ code: "ELIZA10", discountValue: 10, type: "Percentage", active: true }]);
-  const [bundleOptions, setBundleOptions] = useState(BASE_BUNDLE_OPTIONS);
-  const [selectedBundle, setSelectedBundle] = useState(BASE_BUNDLE_OPTIONS[1]);
 
-  // Load admin settings from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedPrices = localStorage.getItem("eliza_product_prices");
-      if (savedPrices) {
-        const prices = JSON.parse(savedPrices);
-        const updated = BASE_BUNDLE_OPTIONS.map((b, i) => ({
-          ...b,
-          price: i === 0 ? prices.bottle1 : i === 1 ? prices.bottle2 : prices.bottle3
-        }));
-        setBundleOptions(updated);
-        setSelectedBundle(updated[1]);
-      }
+  // Live store settings & coupons — Convex is the source of truth, so a
+  // change the admin saves reaches every visitor, not just their own browser.
+  const settingsQuery = useQuery(api.settings.getSettings);
+  const couponsQuery = useQuery(api.coupons.listCoupons) as CouponDoc[] | undefined;
 
-      const savedAnnouncement = localStorage.getItem("eliza_announcement");
-      if (savedAnnouncement) setAnnouncementText(savedAnnouncement);
+  const announcementText = settingsQuery?.announcementText ?? "FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN";
+  const whatsappNumber = settingsQuery?.whatsappNumber ?? "+923287657890";
+  const freeDeliverySiteWide = settingsQuery?.freeDeliverySiteWide ?? false;
+  const singleBottleShippingFee = settingsQuery?.singleBottleShippingFee ?? 150;
+  const activeCoupons = useMemo(() => (couponsQuery ?? []).filter((c) => c.active), [couponsQuery]);
 
-      const savedWhatsapp = localStorage.getItem("eliza_whatsapp");
-      if (savedWhatsapp) setWhatsappNumber(savedWhatsapp);
+  const bundleOptions = useMemo(() => {
+    if (!settingsQuery) return BASE_BUNDLE_OPTIONS;
+    const prices = settingsQuery.productPrices;
+    return BASE_BUNDLE_OPTIONS.map((b, i) => ({
+      ...b,
+      price: i === 0 ? prices.bottle1 : i === 1 ? prices.bottle2 : prices.bottle3
+    }));
+  }, [settingsQuery]);
 
-      const savedCoupons = localStorage.getItem("eliza_coupons");
-      if (savedCoupons) {
-        const parsed = JSON.parse(savedCoupons);
-        setActiveCoupons(parsed.filter((c: any) => c.active));
-      }
-    } catch { /* fallback to defaults */ }
-  }, []);
+  const [selectedBundleId, setSelectedBundleId] = useState(BASE_BUNDLE_OPTIONS[1].id);
+  const selectedBundle = bundleOptions.find((b) => b.id === selectedBundleId) ?? bundleOptions[1];
   const [quantity, setQuantity] = useState(1);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -317,10 +308,11 @@ export default function Home() {
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const currentDiscount = discountApplied ? Math.round(subtotal * (discountPercent / 100)) : 0;
   // Per the Shipping Policy: only the 1-Bottle Starter Pack carries a delivery
-  // fee — 2 & 3-Bottle packs are always free, regardless of price.
+  // fee — 2 & 3-Bottle packs are always free, regardless of price. The admin
+  // can also force free delivery site-wide from the dashboard for promotions.
   const isSingleBottlePack = cartItems[0]?.bundleTitle?.startsWith("1 Bottle") ?? false;
-  const isFreeDelivery = cartItems.length > 0 && !isSingleBottlePack;
-  const shippingFee = isSingleBottlePack ? 150 : 0;
+  const isFreeDelivery = cartItems.length > 0 && (freeDeliverySiteWide || !isSingleBottlePack);
+  const shippingFee = isFreeDelivery ? 0 : singleBottleShippingFee;
   const grandTotal = Math.max(0, subtotal - currentDiscount + shippingFee);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
@@ -629,7 +621,7 @@ export default function Home() {
                   return (
                     <div
                       key={bundle.id}
-                      onClick={() => setSelectedBundle(bundle)}
+                      onClick={() => setSelectedBundleId(bundle.id)}
                       className={`relative p-4 rounded-xl border-2 cursor-pointer transition-all ${
                         isSelected
                           ? "border-[#0b2912] bg-[#0b2912]/[0.03] shadow-sm"
@@ -1491,7 +1483,7 @@ export default function Home() {
                       </button>
                     </div>
                     {discountApplied && (
-                      <p className="text-xs font-bold text-emerald-700">✓ 10% Discount Applied Successfully!</p>
+                      <p className="text-xs font-bold text-emerald-700 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> {discountPercent}% Discount Applied Successfully!</p>
                     )}
 
                     {/* COD SHIPPING ADDRESS FORM */}
@@ -1573,7 +1565,7 @@ export default function Home() {
                       </div>
                       {discountApplied && (
                         <div className="flex justify-between text-emerald-700 font-semibold">
-                          <span>Discount (10% OFF)</span>
+                          <span>Discount ({discountPercent}% OFF)</span>
                           <span>- Rs. {currentDiscount.toLocaleString()}</span>
                         </div>
                       )}

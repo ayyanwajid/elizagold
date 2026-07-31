@@ -151,22 +151,20 @@ export default function AdminDashboard() {
   const prevOrderCountRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Products Pricing State (synced via localStorage to storefront)
+  // Store Settings State — loaded from Convex (source of truth for every
+  // visitor), edited locally as a draft, persisted via updateSettings.
   const [productPrices, setProductPrices] = useState({ bottle1: 1499, bottle2: 2699, bottle3: 3699 });
+  const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
+  const [whatsappNumber, setWhatsappNumber] = useState("+923287657890");
+  const [freeDeliverySiteWide, setFreeDeliverySiteWide] = useState(false);
+  const [singleBottleShippingFee, setSingleBottleShippingFee] = useState(150);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const settingsLoadedRef = useRef(false);
 
-  // Coupons State
-  const [coupons, setCoupons] = useState([
-    { id: 1, code: "ELIZA10", discount: "10% OFF", discountValue: 10, type: "Percentage", active: true },
-    { id: 2, code: "FREESHIP", discount: "Free Delivery", discountValue: 0, type: "Shipping", active: true }
-  ]);
+  // New Coupon Form State
   const [newCouponCode, setNewCouponCode] = useState("");
   const [newCouponDiscount, setNewCouponDiscount] = useState("");
   const [newCouponValue, setNewCouponValue] = useState("");
-
-  // Store Settings State
-  const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
-  const [whatsappNumber, setWhatsappNumber] = useState("+923287657890");
-  const [settingsSaved, setSettingsSaved] = useState(false);
 
   // ── CONVEX LIVE SUBSCRIPTIONS ──────────────────────────────────────────
   // "skip" until we hold a verified session token — the query itself
@@ -174,29 +172,35 @@ export default function AdminDashboard() {
   // even attempt it before login.
   const convexOrders = useQuery(api.orders.listOrders, adminToken ? { token: adminToken } : "skip");
   const convexReviews = useQuery(api.reviews.listReviews);
+  const convexSettings = useQuery(api.settings.getSettings);
+  interface CouponDoc { _id: string; code: string; discount: string; discountValue: number; type: string; active: boolean; }
+  const convexCoupons = (useQuery(api.coupons.listCoupons) ?? []) as CouponDoc[];
   const updateOrderStatusMutation = useMutation(api.orders.updateOrderStatus);
   const loginMutation = useMutation(api.admin.login);
   const logoutMutation = useMutation(api.admin.logout);
+  const updateSettingsMutation = useMutation(api.settings.updateSettings);
+  const addCouponMutation = useMutation(api.coupons.addCoupon);
+  const toggleCouponMutation = useMutation(api.coupons.toggleCoupon);
+  const deleteCouponMutation = useMutation(api.coupons.deleteCoupon);
+
+  // Seed the local draft fields from Convex once settings load — only once,
+  // so a live-query refresh (e.g. right after this admin's own save) doesn't
+  // clobber an in-progress edit on another field.
+  useEffect(() => {
+    if (convexSettings && !settingsLoadedRef.current) {
+      settingsLoadedRef.current = true;
+      setAnnouncementText(convexSettings.announcementText);
+      setWhatsappNumber(convexSettings.whatsappNumber);
+      setProductPrices(convexSettings.productPrices);
+      setFreeDeliverySiteWide(convexSettings.freeDeliverySiteWide);
+      setSingleBottleShippingFee(convexSettings.singleBottleShippingFee);
+    }
+  }, [convexSettings]);
 
   // ── AUTH & INITIAL LOAD ────────────────────────────────────────────────
   useEffect(() => {
     const savedToken = localStorage.getItem("eliza_admin_token");
     if (savedToken) setAdminToken(savedToken);
-
-    // Load prices from localStorage (written by admin, read by storefront)
-    const savedPrices = localStorage.getItem("eliza_product_prices");
-    if (savedPrices) setProductPrices(JSON.parse(savedPrices));
-
-    // Load coupons
-    const savedCoupons = localStorage.getItem("eliza_coupons");
-    if (savedCoupons) setCoupons(JSON.parse(savedCoupons));
-
-    // Load settings
-    const savedAnnouncement = localStorage.getItem("eliza_announcement");
-    if (savedAnnouncement) setAnnouncementText(savedAnnouncement);
-
-    const savedWhatsapp = localStorage.getItem("eliza_whatsapp");
-    if (savedWhatsapp) setWhatsappNumber(savedWhatsapp);
 
     // Seed with sample if nothing in convex yet
     try {
@@ -308,21 +312,39 @@ export default function AdminDashboard() {
     document.body.removeChild(link);
   };
 
-  const saveProductPrices = () => {
-    localStorage.setItem("eliza_product_prices", JSON.stringify(productPrices));
-    alert("Prices saved. The storefront will reflect the updated prices.");
+  // All settings live in one Convex document, so both "Save Prices" and
+  // "Save Settings" persist the full current draft — whichever tab the
+  // admin is on, nothing else in the draft gets reverted.
+  const persistSettings = useCallback(async () => {
+    if (!adminToken) return false;
+    try {
+      await updateSettingsMutation({
+        token: adminToken,
+        announcementText,
+        whatsappNumber,
+        productPrices,
+        freeDeliverySiteWide,
+        singleBottleShippingFee,
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }, [adminToken, updateSettingsMutation, announcementText, whatsappNumber, productPrices, freeDeliverySiteWide, singleBottleShippingFee]);
+
+  const saveProductPrices = async () => {
+    const ok = await persistSettings();
+    alert(ok ? "Prices saved — every visitor will now see the updated prices." : "Could not save prices. Please try again.");
   };
 
-  const saveCoupons = useCallback((updated: typeof coupons) => {
-    setCoupons(updated);
-    localStorage.setItem("eliza_coupons", JSON.stringify(updated));
-  }, []);
-
-  const saveSettings = () => {
-    localStorage.setItem("eliza_announcement", announcementText);
-    localStorage.setItem("eliza_whatsapp", whatsappNumber);
-    setSettingsSaved(true);
-    setTimeout(() => setSettingsSaved(false), 3000);
+  const saveSettings = async () => {
+    const ok = await persistSettings();
+    if (ok) {
+      setSettingsSaved(true);
+      setTimeout(() => setSettingsSaved(false), 3000);
+    } else {
+      alert("Could not save settings. Please try again.");
+    }
   };
 
   // ── METRICS ───────────────────────────────────────────────────────────
@@ -914,9 +936,9 @@ export default function AdminDashboard() {
                 <p className="text-xs text-gray-500">Update bundle prices — changes sync to storefront on save</p>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2 text-xs text-amber-800">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>Price changes are saved to the browser session. To make prices permanent across devices, the storefront needs a backend settings API (upgrade available).</span>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-2 text-xs text-emerald-800">
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>Prices are stored centrally — once saved, every visitor sees the new price immediately, on any device.</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -963,7 +985,7 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-gray-900">Coupon & Discount Manager</h2>
-                <p className="text-xs text-gray-500">Create & activate promo codes — they sync to the checkout on this browser</p>
+                <p className="text-xs text-gray-500">Create & activate promo codes — changes apply at checkout for every customer, instantly</p>
               </div>
 
               {/* Create Coupon */}
@@ -984,11 +1006,20 @@ export default function AdminDashboard() {
                   </div>
                 </div>
                 <button
-                  onClick={() => {
-                    if (newCouponCode && newCouponDiscount) {
-                      const updated = [...coupons, { id: Date.now(), code: newCouponCode, discount: newCouponDiscount, discountValue: Number(newCouponValue) || 0, type: "Custom", active: true }];
-                      saveCoupons(updated);
-                      setNewCouponCode(""); setNewCouponDiscount(""); setNewCouponValue("");
+                  onClick={async () => {
+                    if (newCouponCode && newCouponDiscount && adminToken) {
+                      try {
+                        await addCouponMutation({
+                          token: adminToken,
+                          code: newCouponCode,
+                          discount: newCouponDiscount,
+                          discountValue: Number(newCouponValue) || 0,
+                          type: "Custom",
+                        });
+                        setNewCouponCode(""); setNewCouponDiscount(""); setNewCouponValue("");
+                      } catch {
+                        alert("Could not add coupon. Please try again.");
+                      }
                     }
                   }}
                   className="bg-[#0b2912] text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#154620] transition-colors"
@@ -1010,13 +1041,13 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {coupons.map(c => (
-                      <tr key={c.id} className="hover:bg-gray-50">
+                    {convexCoupons.map(c => (
+                      <tr key={c._id} className="hover:bg-gray-50">
                         <td className="py-3.5 px-4 font-black text-[#0b2912] font-mono tracking-wider">{c.code}</td>
                         <td className="py-3.5 px-4 font-semibold">{c.discount}</td>
                         <td className="py-3.5 px-4 font-semibold">{c.discountValue || "—"}%</td>
                         <td className="py-3.5 px-4">
-                          <button onClick={() => saveCoupons(coupons.map(x => x.id === c.id ? { ...x, active: !x.active } : x))}>
+                          <button onClick={() => adminToken && toggleCouponMutation({ token: adminToken, id: c._id, active: !c.active }).catch(() => alert("Could not update coupon."))}>
                             {c.active
                               ? <span className="flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded"><CheckCircle2 className="w-3 h-3" /> Active</span>
                               : <span className="flex items-center gap-1 bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded"><XCircle className="w-3 h-3" /> Paused</span>
@@ -1024,7 +1055,7 @@ export default function AdminDashboard() {
                           </button>
                         </td>
                         <td className="py-3.5 px-4">
-                          <button onClick={() => saveCoupons(coupons.filter(x => x.id !== c.id))} className="text-red-500 hover:text-red-700 font-bold text-xs">Delete</button>
+                          <button onClick={() => adminToken && deleteCouponMutation({ token: adminToken, id: c._id }).catch(() => alert("Could not delete coupon."))} className="text-red-500 hover:text-red-700 font-bold text-xs">Delete</button>
                         </td>
                       </tr>
                     ))}
@@ -1068,6 +1099,42 @@ export default function AdminDashboard() {
                       <Eye className="w-3 h-3" /> View Storefront Live
                     </Link>
                   </div>
+                </div>
+              </div>
+
+              {/* Shipping & Delivery */}
+              <div className="bg-white p-6 rounded-2xl border border-[#e7e1d5] shadow-sm space-y-5 max-w-xl">
+                <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5"><Truck className="w-4 h-4 text-[#a9812e]" /> Shipping &amp; Delivery</h3>
+
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700">Free Delivery Site-Wide</label>
+                    <p className="text-[10px] text-gray-400 mt-0.5">When on, every order ships free regardless of bundle — useful for promotions.</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={freeDeliverySiteWide}
+                    onClick={() => setFreeDeliverySiteWide(v => !v)}
+                    className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${freeDeliverySiteWide ? "bg-emerald-500" : "bg-gray-300"}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${freeDeliverySiteWide ? "translate-x-5" : ""}`} />
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">1-Bottle Pack Shipping Fee (PKR)</label>
+                  <input
+                    type="number"
+                    value={singleBottleShippingFee}
+                    onChange={e => setSingleBottleShippingFee(Number(e.target.value))}
+                    disabled={freeDeliverySiteWide}
+                    className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl font-bold focus:border-[#0b2912] outline-none disabled:opacity-50 disabled:bg-gray-50"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">
+                    Charged only on the 1-Bottle Starter Pack — 2 &amp; 3-Bottle packs always ship free.
+                    {freeDeliverySiteWide && " Currently ignored because free delivery is on, site-wide."}
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
