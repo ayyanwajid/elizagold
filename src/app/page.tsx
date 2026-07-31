@@ -71,7 +71,7 @@ const BASE_BUNDLE_OPTIONS = [
     price: 3699,
     originalPrice: 7500,
     badge: "BEST VALUE",
-    savings: "Save Rs. 3,801 + FREE Neem Comb"
+    savings: "Save Rs. 3,801 + FREE Delivery"
   }
 ];
 
@@ -178,7 +178,6 @@ export default function Home() {
   const [quantity, setQuantity] = useState(1);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [addScalpMassager, setAddScalpMassager] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountPercent, setDiscountPercent] = useState(10);
@@ -192,7 +191,6 @@ export default function Home() {
       address: string;
     };
     items: CartItem[];
-    addMassager: boolean;
     total: number;
     date: string;
     estimatedDelivery: string;
@@ -317,10 +315,13 @@ export default function Home() {
 
   // Cart Financials
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const massagerPrice = addScalpMassager ? 299 : 0;
-  const currentDiscount = discountApplied ? Math.round((subtotal + massagerPrice) * (discountPercent / 100)) : 0;
-  const grandTotal = Math.max(0, subtotal + massagerPrice - currentDiscount);
-  const isFreeDelivery = subtotal >= 1499;
+  const currentDiscount = discountApplied ? Math.round(subtotal * (discountPercent / 100)) : 0;
+  // Per the Shipping Policy: only the 1-Bottle Starter Pack carries a delivery
+  // fee — 2 & 3-Bottle packs are always free, regardless of price.
+  const isSingleBottlePack = cartItems[0]?.bundleTitle?.startsWith("1 Bottle") ?? false;
+  const isFreeDelivery = cartItems.length > 0 && !isSingleBottlePack;
+  const shippingFee = isSingleBottlePack ? 150 : 0;
+  const grandTotal = Math.max(0, subtotal - currentDiscount + shippingFee);
 
   const handleApplyCoupon = (e: React.FormEvent) => {
     e.preventDefault();
@@ -366,7 +367,6 @@ export default function Home() {
         address: String(data.address || "")
       },
       items: cartItems,
-      addMassager: addScalpMassager,
       total: grandTotal,
       date: new Date().toLocaleDateString("en-PK", { day: "numeric", month: "short", year: "numeric" }),
       estimatedDelivery: "2 to 3 Business Days"
@@ -388,7 +388,7 @@ export default function Home() {
           orderId: orderDetails.orderId,
           customer: orderDetails.customer,
           items: orderDetails.items,
-          addMassager: orderDetails.addMassager,
+          addMassager: false, // retained only because the Convex orders schema still requires the field
           total: orderDetails.total,
           status: "Pending",
           date: orderDetails.date,
@@ -1437,7 +1437,7 @@ export default function Home() {
                     {/* FREE SHIPPING PROGRESS BAR */}
                     <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs">
                       <div className="flex justify-between font-bold text-emerald-900 mb-1.5">
-                        <span>{isFreeDelivery ? "🎉 You unlocked FREE Delivery!" : "Add 1 more for FREE Shipping"}</span>
+                        <span>{isFreeDelivery ? "You unlocked FREE Delivery!" : "Switch to a 2-Bottle Pack or larger for FREE Delivery"}</span>
                         <span>{isFreeDelivery ? "100%" : "50%"}</span>
                       </div>
                       <div className="w-full bg-emerald-200 h-2 rounded-full overflow-hidden">
@@ -1471,21 +1471,6 @@ export default function Home() {
                           <Plus className="w-3.5 h-3.5" />
                         </button>
                       </div>
-                    </div>
-
-                    {/* ORDER BUMP OPTION */}
-                    <div className="bg-amber-50/80 border border-amber-200 p-3.5 rounded-xl flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        id="massager"
-                        checked={addScalpMassager}
-                        onChange={(e) => setAddScalpMassager(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 text-[#0b2912] border-gray-300 rounded focus:ring-0 cursor-pointer"
-                      />
-                      <label htmlFor="massager" className="text-xs cursor-pointer">
-                        <span className="font-bold text-gray-900 block">Add Neem Wood Scalp Massager Comb (+Rs. 299)</span>
-                        <span className="text-gray-600 text-[11px]">Improves blood circulation by 3x when applying oil.</span>
-                      </label>
                     </div>
 
                     {/* COUPON CODE FORM */}
@@ -1538,7 +1523,13 @@ export default function Home() {
                           </label>
                           <input
                             type="tel"
-                            {...register("phone", { required: "Mobile phone is required", pattern: { value: /^[0-9+ ]{10,13}$/, message: "Enter a valid mobile number" } })}
+                            {...register("phone", {
+                              required: "Mobile phone is required",
+                              validate: (value) => {
+                                const cleaned = String(value).replace(/[\s-]/g, "");
+                                return /^(?:\+92|0092|0)3\d{9}$/.test(cleaned) || "Enter a valid Pakistani mobile number (e.g. 03001234567)";
+                              }
+                            })}
                             placeholder="03001234567"
                             className="w-full px-3.5 py-2.5 text-sm border-2 border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-[#0b2912] focus:ring-2 focus:ring-[#0b2912]/20 transition-all font-medium"
                           />
@@ -1580,12 +1571,6 @@ export default function Home() {
                         <span>Items Subtotal</span>
                         <span>Rs. {subtotal.toLocaleString()}</span>
                       </div>
-                      {addScalpMassager && (
-                        <div className="flex justify-between text-gray-600">
-                          <span>Neem Scalp Massager</span>
-                          <span>Rs. 299</span>
-                        </div>
-                      )}
                       {discountApplied && (
                         <div className="flex justify-between text-emerald-700 font-semibold">
                           <span>Discount (10% OFF)</span>
@@ -1594,7 +1579,11 @@ export default function Home() {
                       )}
                       <div className="flex justify-between text-gray-600">
                         <span>Shipping Fee</span>
-                        <span className="text-emerald-700 font-bold">FREE (COD)</span>
+                        {isFreeDelivery ? (
+                          <span className="text-emerald-700 font-bold">FREE (COD)</span>
+                        ) : (
+                          <span className="font-bold text-gray-900">Rs. {shippingFee.toLocaleString()}</span>
+                        )}
                       </div>
 
                       <div className="border-t border-gray-100 pt-2 flex justify-between items-center text-sm font-bold text-gray-900">

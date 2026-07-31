@@ -56,7 +56,6 @@ interface AdminOrder {
     address: string;
   };
   items: Array<{ name: string; bundleTitle: string; price: number; quantity: number }>;
-  addMassager?: boolean;
   total: number;
   date: string;
   status: string;
@@ -79,19 +78,19 @@ const SAMPLE_ORDERS: AdminOrder[] = [
     orderId: "EG-94821",
     customer: { fullName: "Mohammad Hamza", phone: "03001234567", city: "Lahore", address: "House 45, Street 12, DHA Phase 5" },
     items: [{ name: "Roghan-e-Azam Misali Hair Oil", bundleTitle: "2 Bottles (Popular Pack)", price: 2699, quantity: 1 }],
-    addMassager: true, total: 2998, date: "28 Jul 2026", status: "Processing"
+    total: 2699, date: "28 Jul 2026", status: "Processing"
   },
   {
     orderId: "EG-94820",
     customer: { fullName: "Saba Tariq", phone: "03219876543", city: "Karachi", address: "Flat 4B, Silver Heights, Clifton Block 2" },
     items: [{ name: "Roghan-e-Azam Misali Hair Oil", bundleTitle: "3 Bottles (Family Pack)", price: 3699, quantity: 1 }],
-    addMassager: false, total: 3699, date: "28 Jul 2026", status: "Dispatched"
+    total: 3699, date: "28 Jul 2026", status: "Dispatched"
   },
   {
     orderId: "EG-94819",
     customer: { fullName: "Usman Raza", phone: "03451122334", city: "Islamabad", address: "House 102, Street 7, Sector F-8/3" },
     items: [{ name: "Roghan-e-Azam Misali Hair Oil", bundleTitle: "1 Bottle (Starter Pack)", price: 1499, quantity: 1 }],
-    addMassager: false, total: 1499, date: "27 Jul 2026", status: "Delivered"
+    total: 1499, date: "27 Jul 2026", status: "Delivered"
   }
 ];
 
@@ -217,7 +216,7 @@ export default function AdminDashboard() {
     if (!convexOrders || !Array.isArray(convexOrders) || convexOrders.length === 0) return;
     const formatted: AdminOrder[] = convexOrders.map((o: any) => ({
       _id: o._id, orderId: o.orderId, customer: o.customer,
-      items: o.items, addMassager: o.addMassager, total: o.total,
+      items: o.items, total: o.total,
       date: o.date, status: o.status
     }));
 
@@ -297,9 +296,9 @@ export default function AdminDashboard() {
   };
 
   const handleExportCSV = () => {
-    let csv = "data:text/csv;charset=utf-8,Order ID,Customer,Phone,City,Address,Package,Massager,Total (PKR),Date,Status\n";
+    let csv = "data:text/csv;charset=utf-8,Order ID,Customer,Phone,City,Address,Package,Total (PKR),Date,Status\n";
     orders.forEach(o => {
-      csv += `"${o.orderId}","${o.customer.fullName}","${o.customer.phone}","${o.customer.city}","${o.customer.address.replace(/"/g,'""')}","${o.items?.[0]?.bundleTitle || ''}","${o.addMassager ? 'Yes' : 'No'}","${o.total}","${o.date}","${o.status}"\n`;
+      csv += `"${o.orderId}","${o.customer.fullName}","${o.customer.phone}","${o.customer.city}","${o.customer.address.replace(/"/g,'""')}","${o.items?.[0]?.bundleTitle || ''}","${o.total}","${o.date}","${o.status}"\n`;
     });
     const link = document.createElement("a");
     link.setAttribute("href", encodeURI(csv));
@@ -768,7 +767,6 @@ export default function AdminDashboard() {
                               </td>
                               <td className="py-3.5 px-4">
                                 <span className="font-medium text-gray-800">{o.items?.[0]?.bundleTitle || "Roghan-e-Azam"}</span>
-                                {o.addMassager && <span className="block text-[10px] text-emerald-600 font-bold mt-0.5">+ Scalp Massager</span>}
                               </td>
                               <td className="py-3.5 px-4 font-extrabold text-gray-900">Rs. {o.total?.toLocaleString()}</td>
                               <td className="py-3.5 px-4 text-gray-500">
@@ -821,7 +819,6 @@ export default function AdminDashboard() {
                                       {o.items?.map((item, i) => (
                                         <p key={i} className="font-semibold text-gray-800">{item.bundleTitle} × {item.quantity} — Rs. {item.price?.toLocaleString()}</p>
                                       ))}
-                                      {o.addMassager && <p className="text-emerald-700 font-bold mt-0.5">+ Scalp Massager (Rs. 299)</p>}
                                     </div>
                                     <div>
                                       <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Payment</span>
@@ -1123,7 +1120,7 @@ export default function AdminDashboard() {
                 { label: "ORDER / TRACKING NO", value: <span className="font-mono text-sm font-black">{selectedPrintOrder.orderId}</span> },
                 { label: "CONSIGNEE (CUSTOMER)", value: <><p className="font-bold text-sm">{selectedPrintOrder.customer.fullName}</p><p className="font-semibold">{selectedPrintOrder.customer.phone}</p></> },
                 { label: "DESTINATION", value: <><p className="font-bold">{selectedPrintOrder.customer.city}</p><p className="text-gray-700">{selectedPrintOrder.customer.address}</p></> },
-                { label: "CONTENTS", value: <><p className="font-semibold">{selectedPrintOrder.items?.[0]?.bundleTitle || "Roghan-e-Azam Hair Oil"}</p>{selectedPrintOrder.addMassager && <p className="text-emerald-700 font-bold">+ Neem Scalp Massager</p>}</> }
+                { label: "CONTENTS", value: <p className="font-semibold">{selectedPrintOrder.items?.[0]?.bundleTitle || "Roghan-e-Azam Hair Oil"}</p> }
               ].map(row => (
                 <div key={row.label} className="border-b border-gray-200 pb-2">
                   <span className="text-[10px] font-bold text-gray-400 block mb-0.5">{row.label}:</span>
