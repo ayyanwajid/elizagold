@@ -35,7 +35,10 @@ import {
   Phone,
   Clock,
   AlertCircle,
-  PackageCheck
+  PackageCheck,
+  X,
+  ShieldCheck,
+  Loader2
 } from "lucide-react";
 
 import { useQuery, useMutation } from "convex/react";
@@ -100,10 +103,40 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; b
   Cancelled:  { label: "Cancelled",  bg: "bg-red-100",     text: "text-red-800",     border: "border-red-300" }
 };
 
+// If Convex ever throws mid-render (e.g. an expired/invalid admin session),
+// this catches it and hands control back to the login screen instead of
+// crashing the whole dashboard.
+class SessionBoundary extends React.Component<
+  { onExpire: () => void; children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { onExpire: () => void; children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch() {
+    this.props.onExpire();
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
+
+const LOCKOUT_THRESHOLD = 5;
+const LOCKOUT_MS = 30_000;
+
 export default function AdminDashboard() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const isAuthenticated = adminToken !== null;
   const [passcodeInput, setPasscodeInput] = useState("");
   const [passcodeError, setPasscodeError] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   const [orders, setOrders] = useState<AdminOrder[]>([]);
@@ -137,14 +170,19 @@ export default function AdminDashboard() {
   const [settingsSaved, setSettingsSaved] = useState(false);
 
   // ── CONVEX LIVE SUBSCRIPTIONS ──────────────────────────────────────────
-  const convexOrders = useQuery(api.orders.listOrders);
+  // "skip" until we hold a verified session token — the query itself
+  // rejects unauthenticated calls server-side, but there's no reason to
+  // even attempt it before login.
+  const convexOrders = useQuery(api.orders.listOrders, adminToken ? { token: adminToken } : "skip");
   const convexReviews = useQuery(api.reviews.listReviews);
   const updateOrderStatusMutation = useMutation(api.orders.updateOrderStatus);
+  const loginMutation = useMutation(api.admin.login);
+  const logoutMutation = useMutation(api.admin.logout);
 
   // ── AUTH & INITIAL LOAD ────────────────────────────────────────────────
   useEffect(() => {
-    const authSaved = localStorage.getItem("eliza_admin_auth");
-    if (authSaved === "true") setIsAuthenticated(true);
+    const savedToken = localStorage.getItem("eliza_admin_token");
+    if (savedToken) setAdminToken(savedToken);
 
     // Load prices from localStorage (written by admin, read by storefront)
     const savedPrices = localStorage.getItem("eliza_product_prices");
@@ -193,7 +231,7 @@ export default function AdminDashboard() {
     }
     prevOrderCountRef.current = formatted.length;
     setOrders(formatted);
-  }, [convexOrders, isAuthenticated]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [convexOrders, isAuthenticated]);
 
   // ── SYNC CONVEX REVIEWS LIVE ───────────────────────────────────────────
   useEffect(() => {
@@ -206,30 +244,54 @@ export default function AdminDashboard() {
   }, [convexReviews]);
 
   // ── HANDLERS ──────────────────────────────────────────────────────────
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcodeInput === "admin123" || passcodeInput === "admin") {
-      setIsAuthenticated(true);
-      localStorage.setItem("eliza_admin_auth", "true");
-      setPasscodeError(false);
+    if (lockoutUntil && Date.now() < lockoutUntil) return;
+
+    setLoginLoading(true);
+    setPasscodeError(false);
+    try {
+      const token: string = await loginMutation({ password: passcodeInput });
+      localStorage.setItem("eliza_admin_token", token);
+      setAdminToken(token);
+      setFailedAttempts(0);
+      setLockoutUntil(null);
+      setPasscodeInput("");
       prevOrderCountRef.current = orders.length;
-    } else {
+    } catch {
       setPasscodeError(true);
+      const attempts = failedAttempts + 1;
+      if (attempts >= LOCKOUT_THRESHOLD) {
+        setLockoutUntil(Date.now() + LOCKOUT_MS);
+        setFailedAttempts(0);
+      } else {
+        setFailedAttempts(attempts);
+      }
+    } finally {
+      setLoginLoading(false);
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem("eliza_admin_auth");
-  };
+  const handleLogout = useCallback(() => {
+    if (adminToken) logoutMutation({ token: adminToken }).catch(() => { /* best-effort */ });
+    localStorage.removeItem("eliza_admin_token");
+    setAdminToken(null);
+  }, [adminToken, logoutMutation]);
+
+  // A rejected query (expired/invalid session) throws during render; the
+  // SessionBoundary below catches that and calls this to drop back to login.
+  const handleSessionExpired = useCallback(() => {
+    localStorage.removeItem("eliza_admin_token");
+    setAdminToken(null);
+  }, []);
 
   const updateOrderStatus = async (orderId: string, newStatus: string, docId?: string) => {
     const updated = orders.map(o => o.orderId === orderId ? { ...o, status: newStatus } : o);
     setOrders(updated);
     localStorage.setItem("eliza_orders_list", JSON.stringify(updated));
     try {
-      if (docId && updateOrderStatusMutation) {
-        await updateOrderStatusMutation({ id: docId as any, status: newStatus });
+      if (docId && updateOrderStatusMutation && adminToken) {
+        await updateOrderStatusMutation({ token: adminToken, id: docId as any, status: newStatus });
       }
     } catch { /* local fallback */ }
   };
@@ -249,7 +311,7 @@ export default function AdminDashboard() {
 
   const saveProductPrices = () => {
     localStorage.setItem("eliza_product_prices", JSON.stringify(productPrices));
-    alert("✅ Prices saved! Storefront will reflect updated prices.");
+    alert("Prices saved. The storefront will reflect the updated prices.");
   };
 
   const saveCoupons = useCallback((updated: typeof coupons) => {
@@ -298,37 +360,57 @@ export default function AdminDashboard() {
 
   // ── LOGIN SCREEN ───────────────────────────────────────────────────────
   if (!isAuthenticated) {
+    const isLockedOut = !!lockoutUntil && Date.now() < lockoutUntil;
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#041207] via-[#0b2912] to-[#041207] text-white flex items-center justify-center p-4 font-sans">
-        <div className="bg-black/60 backdrop-blur-xl border border-[#d4af37]/40 p-8 sm:p-10 rounded-3xl max-w-md w-full shadow-[0_0_50px_rgba(212,175,55,0.2)] text-center space-y-6">
-          <div className="w-16 h-16 rounded-full bg-black/60 border-2 border-[#d4af37] shadow-[0_0_20px_rgba(212,175,55,0.5)] mx-auto flex items-center justify-center p-1">
-            <Image src="/assets/logo-icon.webp" alt="Eliza Gold" width={100} height={100} className="w-full h-full object-cover mix-blend-screen" />
+      <div className="min-h-screen bg-[#0b2912] text-white flex items-center justify-center p-4 font-sans">
+        <div className="bg-[#0e2f17] border border-[#a9812e]/40 p-8 sm:p-10 rounded-2xl max-w-md w-full shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] text-center space-y-7">
+          <div className="w-16 h-16 rounded-full bg-[#06170b] border border-[#a9812e] mx-auto flex items-center justify-center p-1">
+            <Image src="/assets/logo-icon.webp" alt="Eliza Gold" width={100} height={100} className="w-full h-full object-cover rounded-full" />
           </div>
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0]">
-              Eliza Gold Admin Panel
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#e9c869]">
+              Eliza Gold Admin
             </h1>
-            <p className="text-xs text-emerald-200/70 mt-1 uppercase tracking-widest font-semibold">Store Operations Control Center</p>
+            <p className="text-[11px] text-[#9fb3a3] mt-1.5 uppercase tracking-[0.15em] font-semibold">Store Operations Control Center</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
-              <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-[#d4af37]" /> Admin Passcode
+              <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5 text-[#c9a227]" /> Admin Passcode
               </label>
               <input
                 type="password"
                 value={passcodeInput}
                 onChange={(e) => setPasscodeInput(e.target.value)}
-                placeholder="Enter passcode (default: admin123)"
-                className="w-full px-4 py-3 bg-white/10 border border-[#d4af37]/40 rounded-xl text-white outline-none focus:border-[#d4af37] text-sm"
+                placeholder="Enter your admin passcode"
+                disabled={isLockedOut || loginLoading}
+                autoFocus
+                className="w-full px-4 py-3 bg-black/25 border border-[#a9812e]/40 rounded-lg text-white outline-none focus:border-[#c9a227] text-sm disabled:opacity-50"
               />
-              {passcodeError && <p className="text-xs text-red-400 mt-1 font-semibold">❌ Incorrect passcode! Use &quot;admin123&quot;</p>}
+              {passcodeError && !isLockedOut && (
+                <p className="text-xs text-[#e29184] mt-2 font-medium">Incorrect passcode. Please try again.</p>
+              )}
+              {isLockedOut && (
+                <p className="text-xs text-[#e29184] mt-2 font-medium">Too many attempts — try again in a minute.</p>
+              )}
             </div>
-            <button type="submit" className="w-full bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-lg">
-              Sign In To Control Panel
+            <button
+              type="submit"
+              disabled={isLockedOut || loginLoading || !passcodeInput}
+              className="w-full bg-[#c9a227] text-[#06170b] py-3.5 rounded-lg font-bold text-xs uppercase tracking-wider hover:bg-[#dab53a] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loginLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4" /> Sign In to Control Panel
+                </>
+              )}
             </button>
           </form>
-          <Link href="/" className="inline-flex items-center gap-1 text-xs text-[#d4af37] hover:underline pt-2">← Return to Storefront</Link>
+          <Link href="/" className="inline-flex items-center gap-1 text-xs text-[#c9a227] hover:underline pt-1">← Return to Storefront</Link>
         </div>
       </div>
     );
@@ -336,39 +418,42 @@ export default function AdminDashboard() {
 
   // ── MAIN DASHBOARD ─────────────────────────────────────────────────────
   return (
+    <SessionBoundary onExpire={handleSessionExpired}>
     <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] flex flex-col font-sans">
       {/* Notification sound (silent mp3 fallback) */}
       <audio ref={audioRef} src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjIwLjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA" preload="auto" />
 
       {/* NEW ORDER NOTIFICATION TOAST */}
       {newOrderAlert && (
-        <div className="fixed top-4 right-4 z-[999] max-w-sm w-full bg-[#0b2912] text-white rounded-2xl shadow-2xl border border-[#d4af37]/60 p-4 animate-bounce">
+        <div className="fixed top-4 right-4 z-[999] max-w-sm w-full bg-[#0b2912] text-white rounded-xl shadow-2xl border border-[#a9812e]/50 p-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-[#d4af37] rounded-xl flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 bg-[#a9812e] rounded-lg flex items-center justify-center shrink-0">
               <Bell className="w-5 h-5 text-[#041207]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-black text-sm text-[#d4af37]">🛒 NEW ORDER RECEIVED!</p>
-              <p className="text-xs font-bold mt-0.5">{newOrderAlert.customer.fullName} — {newOrderAlert.customer.city}</p>
+              <p className="font-bold text-sm text-[#dab53a] uppercase tracking-wide">New Order Received</p>
+              <p className="text-xs font-bold mt-1">{newOrderAlert.customer.fullName} — {newOrderAlert.customer.city}</p>
               <p className="text-xs text-gray-300">{newOrderAlert.items?.[0]?.bundleTitle} · Rs. {newOrderAlert.total?.toLocaleString()}</p>
               <p className="text-[10px] text-gray-400 font-mono mt-0.5">{newOrderAlert.orderId}</p>
             </div>
-            <button onClick={() => setNewOrderAlert(null)} className="text-gray-400 hover:text-white shrink-0">✕</button>
+            <button onClick={() => setNewOrderAlert(null)} className="text-gray-400 hover:text-white shrink-0">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
 
       {/* HEADER */}
-      <header className="bg-gradient-to-r from-[#041207] via-[#0b2912] to-[#041207] text-white px-4 sm:px-6 py-3.5 flex items-center justify-between border-b border-[#d4af37]/30 shadow-md sticky top-0 z-50">
+      <header className="bg-[#0b2912] text-white px-4 sm:px-6 py-3.5 flex items-center justify-between border-b border-[#a9812e]/30 shadow-md sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border border-[#d4af37] bg-black/40 overflow-hidden flex items-center justify-center p-0.5">
+          <div className="w-10 h-10 rounded-full border border-[#a9812e] bg-black/40 overflow-hidden flex items-center justify-center p-0.5">
             <Image src="/assets/logo-icon.webp" alt="Logo" width={50} height={50} className="w-full h-full object-cover mix-blend-screen" />
           </div>
           <div>
-            <h1 className="font-serif font-bold text-base sm:text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0] leading-none">
+            <h1 className="font-serif font-bold text-base sm:text-lg text-[#dab53a] leading-none">
               Eliza Gold Manager
             </h1>
-            <span className="text-[9px] text-emerald-300 font-extrabold uppercase tracking-widest">Operations Control Center</span>
+            <span className="text-[9px] text-emerald-300/80 font-extrabold uppercase tracking-widest">Operations Control Center</span>
           </div>
         </div>
 
@@ -378,16 +463,16 @@ export default function AdminDashboard() {
             onClick={() => { setActiveTab("orders"); setNotificationCount(0); }}
             className="relative p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
           >
-            <Bell className="w-4 h-4 text-[#d4af37]" />
+            <Bell className="w-4 h-4 text-[#c9a227]" />
             {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {notificationCount}
               </span>
             )}
           </button>
 
           <Link href="/" target="_blank" className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-xs px-3 py-1.5 rounded-lg border border-white/20 transition-colors">
-            <Eye className="w-3.5 h-3.5 text-[#d4af37]" />
+            <Eye className="w-3.5 h-3.5 text-[#c9a227]" />
             <span className="hidden sm:inline">View Storefront</span>
           </Link>
           <button onClick={handleLogout} className="flex items-center gap-1.5 bg-red-950/60 hover:bg-red-900 text-red-200 text-xs px-3 py-1.5 rounded-lg border border-red-500/30 transition-colors">
@@ -400,7 +485,7 @@ export default function AdminDashboard() {
       <div className="flex-1 flex flex-col md:flex-row">
         {/* SIDEBAR */}
         <aside className="w-full md:w-64 bg-[#05180a] text-white p-4 space-y-1.5 border-r border-[#0b2912] shrink-0 md:min-h-screen">
-          <div className="text-[10px] uppercase font-bold text-[#d4af37] tracking-widest px-3 py-2">Control Modules</div>
+          <div className="text-[10px] uppercase font-bold text-[#a9812e] tracking-widest px-3 py-2">Control Modules</div>
           {([
             { id: "overview",  label: "Dashboard Overview",  icon: LayoutDashboard, badge: null },
             { id: "orders",    label: `Orders (${orders.length})`, icon: ShoppingBag, badge: (pendingCount + processingCount) > 0 ? pendingCount + processingCount : null },
@@ -416,7 +501,7 @@ export default function AdminDashboard() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  isActive ? "bg-[#d4af37] text-[#041207] shadow-md" : "text-gray-300 hover:bg-white/10 hover:text-white"
+                  isActive ? "bg-[#a9812e] text-[#041207] shadow-md" : "text-gray-300 hover:bg-white/10 hover:text-white"
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -434,7 +519,7 @@ export default function AdminDashboard() {
 
           {/* Quick Stats in sidebar */}
           <div className="pt-4 mt-4 border-t border-white/10 space-y-2">
-            <div className="text-[10px] uppercase font-bold text-[#d4af37] tracking-widest px-3">Live Stats</div>
+            <div className="text-[10px] uppercase font-bold text-[#a9812e] tracking-widest px-3">Live Stats</div>
             {[
               { label: "Pending",    count: pendingCount,    color: "bg-amber-500" },
               { label: "Processing", count: processingCount, color: "bg-purple-500" },
@@ -474,7 +559,7 @@ export default function AdminDashboard() {
                 {[
                   { label: "Total Revenue", value: `Rs. ${totalRevenue.toLocaleString()}`, sub: "All orders incl. COD", icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50" },
                   { label: "COD Collected", value: `Rs. ${deliveredRevenue.toLocaleString()}`, sub: `${deliveredCount} orders delivered`, icon: PackageCheck, color: "text-blue-600", bg: "bg-blue-50" },
-                  { label: "Total Orders", value: String(orders.length), sub: `${pendingCount + processingCount} need action`, icon: ShoppingBag, color: "text-[#d4af37]", bg: "bg-amber-50" },
+                  { label: "Total Orders", value: String(orders.length), sub: `${pendingCount + processingCount} need action`, icon: ShoppingBag, color: "text-[#a9812e]", bg: "bg-amber-50" },
                   { label: "Avg. Order Value", value: `Rs. ${avgOrderValue.toLocaleString()}`, sub: "Per transaction", icon: TrendingUp, color: "text-purple-600", bg: "bg-purple-50" }
                 ].map(card => {
                   const Icon = card.icon;
@@ -498,7 +583,7 @@ export default function AdminDashboard() {
                 {/* Order Status Funnel */}
                 <div className="bg-white p-5 rounded-2xl border border-[#e7e1d5] shadow-sm space-y-3">
                   <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-[#d4af37]" />
+                    <BarChart3 className="w-4 h-4 text-[#a9812e]" />
                     <h3 className="font-bold text-gray-900 text-sm">Order Status Funnel</h3>
                   </div>
                   {[
@@ -523,7 +608,7 @@ export default function AdminDashboard() {
                 {/* City Breakdown */}
                 <div className="bg-white p-5 rounded-2xl border border-[#e7e1d5] shadow-sm space-y-3">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#d4af37]" />
+                    <MapPin className="w-4 h-4 text-[#a9812e]" />
                     <h3 className="font-bold text-gray-900 text-sm">Top Cities by Orders</h3>
                   </div>
                   {topCities.length === 0 ? (
@@ -537,7 +622,7 @@ export default function AdminDashboard() {
                           <span>{count} orders</span>
                         </div>
                         <div className="w-full bg-gray-100 rounded-full h-1.5">
-                          <div className="bg-[#d4af37] h-1.5 rounded-full" style={{ width: `${(count / (topCities[0]?.[1] || 1)) * 100}%` }} />
+                          <div className="bg-[#a9812e] h-1.5 rounded-full" style={{ width: `${(count / (topCities[0]?.[1] || 1)) * 100}%` }} />
                         </div>
                       </div>
                     </div>
@@ -548,7 +633,7 @@ export default function AdminDashboard() {
               {/* Bundle Popularity */}
               <div className="bg-white p-5 rounded-2xl border border-[#e7e1d5] shadow-sm space-y-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <Package className="w-4 h-4 text-[#d4af37]" />
+                  <Package className="w-4 h-4 text-[#a9812e]" />
                   <h3 className="font-bold text-gray-900 text-sm">Bundle Popularity</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -610,7 +695,7 @@ export default function AdminDashboard() {
                   <p className="text-xs text-gray-500">Manage COD orders, dispatch status & courier manifests</p>
                 </div>
                 <button onClick={handleExportCSV} className="inline-flex items-center gap-2 bg-[#0b2912] text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-[#154620] transition-colors shadow-md self-start sm:self-auto">
-                  <Download className="w-4 h-4 text-[#d4af37]" />
+                  <Download className="w-4 h-4 text-[#a9812e]" />
                   Export CSV Manifest
                 </button>
               </div>
@@ -696,11 +781,11 @@ export default function AdminDashboard() {
                                     onChange={e => updateOrderStatus(o.orderId, e.target.value, o._id)}
                                     className={`px-2.5 py-1.5 text-xs rounded-lg font-bold outline-none border transition-colors cursor-pointer ${sc.bg} ${sc.text} ${sc.border}`}
                                   >
-                                    <option value="Pending">🟡 Pending</option>
-                                    <option value="Processing">🟣 Processing</option>
-                                    <option value="Dispatched">🔵 Dispatched</option>
-                                    <option value="Delivered">🟢 Delivered</option>
-                                    <option value="Cancelled">🔴 Cancelled</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Processing">Processing</option>
+                                    <option value="Dispatched">Dispatched</option>
+                                    <option value="Delivered">Delivered</option>
+                                    <option value="Cancelled">Cancelled</option>
                                   </select>
                                   <a
                                     href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=Assalam%20o%20Alaikum%20${encodeURIComponent(o.customer.fullName)}!%20Aapka%20Eliza%20Gold%20ka%20order%20${o.orderId}%20abhi%20*${o.status}*%20hai.%20Shukriya!%20%F0%9F%8C%BF`}
@@ -713,7 +798,7 @@ export default function AdminDashboard() {
                                   </a>
                                   <button
                                     onClick={() => setSelectedPrintOrder(o)}
-                                    className="p-1.5 bg-[#0b2912] text-[#d4af37] rounded-lg hover:bg-black transition-all inline-flex items-center justify-center shadow-sm"
+                                    className="p-1.5 bg-[#0b2912] text-[#a9812e] rounded-lg hover:bg-black transition-all inline-flex items-center justify-center shadow-sm"
                                     title="Print Courier Slip"
                                   >
                                     <Printer className="w-3.5 h-3.5" />
@@ -840,10 +925,10 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                   { key: "bottle1" as const, label: "1 Bottle (Starter Pack)", option: "Option 1", badge: null, badgeColor: "" },
-                  { key: "bottle2" as const, label: "2 Bottles (Popular Pack)", option: "Option 2", badge: "Most Popular", badgeColor: "bg-[#d4af37] text-[#041207]" },
+                  { key: "bottle2" as const, label: "2 Bottles (Popular Pack)", option: "Option 2", badge: "Most Popular", badgeColor: "bg-[#a9812e] text-[#041207]" },
                   { key: "bottle3" as const, label: "3 Bottles (Family Pack)", option: "Option 3", badge: null, badgeColor: "" }
                 ].map(p => (
-                  <div key={p.key} className={`bg-white p-6 rounded-2xl shadow-sm space-y-4 relative ${p.badge ? "border-2 border-[#d4af37]" : "border border-[#e7e1d5]"}`}>
+                  <div key={p.key} className={`bg-white p-6 rounded-2xl shadow-sm space-y-4 relative ${p.badge ? "border-2 border-[#a9812e]" : "border border-[#e7e1d5]"}`}>
                     {p.badge && <span className={`absolute -top-3 right-4 text-[10px] font-black uppercase px-3 py-0.5 rounded-full ${p.badgeColor}`}>{p.badge}</span>}
                     <span className="text-xs font-bold text-gray-400 uppercase">{p.option}</span>
                     <h3 className="font-serif font-bold text-lg text-gray-900">{p.label}</h3>
@@ -977,12 +1062,12 @@ export default function AdminDashboard() {
                   <label className="block text-xs font-bold text-gray-700 mb-2">Quick Links</label>
                   <div className="flex flex-wrap gap-2">
                     <a href="https://dashboard.convex.dev" target="_blank" rel="noreferrer" className="text-xs bg-[#0b2912] text-white px-3 py-1.5 rounded-lg font-bold hover:bg-[#154620] transition-colors flex items-center gap-1.5">
-                      <Truck className="w-3 h-3 text-[#d4af37]" /> Convex Cloud Dashboard
+                      <Truck className="w-3 h-3 text-[#a9812e]" /> Convex Cloud Dashboard
                     </a>
                     <a href="https://vercel.com" target="_blank" rel="noreferrer" className="text-xs bg-gray-900 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-gray-700 transition-colors flex items-center gap-1.5">
                       <Eye className="w-3 h-3" /> Vercel Deployments
                     </a>
-                    <Link href="/" target="_blank" className="text-xs bg-[#d4af37] text-[#041207] px-3 py-1.5 rounded-lg font-bold hover:brightness-110 transition-colors flex items-center gap-1.5">
+                    <Link href="/" target="_blank" className="text-xs bg-[#a9812e] text-[#041207] px-3 py-1.5 rounded-lg font-bold hover:brightness-110 transition-colors flex items-center gap-1.5">
                       <Eye className="w-3 h-3" /> View Storefront Live
                     </Link>
                   </div>
@@ -1000,19 +1085,19 @@ export default function AdminDashboard() {
 
               {/* Admin Access Info */}
               <div className="bg-white p-5 rounded-2xl border border-[#e7e1d5] shadow-sm max-w-xl space-y-3">
-                <h3 className="font-bold text-sm text-gray-900">Admin Access</h3>
+                <h3 className="font-bold text-sm text-gray-900 flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-[#a9812e]" /> Admin Access</h3>
                 <div className="text-xs space-y-2 text-gray-600">
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
                     <span className="font-semibold">Admin URL</span>
                     <span className="font-mono text-gray-800">elizagold.vercel.app/admin</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="font-semibold">Default Passcode</span>
-                    <span className="font-mono font-bold text-[#0b2912]">admin123</span>
+                    <span className="font-semibold">Passcode</span>
+                    <span className="text-gray-500">Stored server-side, never shown here. Session expires automatically after 24 hours.</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="font-semibold">Database</span>
-                    <span className="font-mono text-blue-700">valiant-porcupine-369.convex.cloud</span>
+                    <span className="font-semibold">To change the passcode</span>
+                    <span className="text-gray-500">Update <code className="bg-gray-100 px-1 rounded">ADMIN_PASSWORD</code> in the Convex dashboard</span>
                   </div>
                 </div>
               </div>
@@ -1031,7 +1116,7 @@ export default function AdminDashboard() {
                 <h3 className="font-serif font-black text-lg uppercase tracking-wider text-[#0b2912]">ELIZA GOLD PAKISTAN</h3>
                 <p className="text-[10px] font-bold text-gray-500">COD COURIER DISPATCH SLIP</p>
               </div>
-              <button onClick={() => setSelectedPrintOrder(null)} className="text-gray-400 hover:text-black font-bold text-xl">✕</button>
+              <button onClick={() => setSelectedPrintOrder(null)} className="text-gray-400 hover:text-black"><X className="w-5 h-5" /></button>
             </div>
             <div className="space-y-2.5 text-xs">
               {[
@@ -1047,12 +1132,12 @@ export default function AdminDashboard() {
               ))}
               <div className="bg-[#0b2912] text-white p-3 rounded-xl flex justify-between items-center">
                 <span className="font-black text-sm">COLLECT CASH (COD):</span>
-                <span className="text-xl font-black text-[#d4af37]">Rs. {selectedPrintOrder.total?.toLocaleString()}</span>
+                <span className="text-xl font-black text-[#a9812e]">Rs. {selectedPrintOrder.total?.toLocaleString()}</span>
               </div>
             </div>
             <div className="flex gap-2">
               <button onClick={() => window.print()} className="flex-1 bg-black text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-gray-800">
-                <Printer className="w-4 h-4 text-[#d4af37]" /> Print Slip
+                <Printer className="w-4 h-4 text-[#a9812e]" /> Print Slip
               </button>
               <button onClick={() => setSelectedPrintOrder(null)} className="px-4 bg-gray-100 text-gray-700 py-3 rounded-xl font-bold text-xs uppercase hover:bg-gray-200">
                 Close
@@ -1062,5 +1147,6 @@ export default function AdminDashboard() {
         </div>
       )}
     </div>
+    </SessionBoundary>
   );
 }

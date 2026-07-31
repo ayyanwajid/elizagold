@@ -37,4 +37,10 @@ export default defineSchema({
     comment: v.string(),
     verified: v.boolean(),
   }),
+
+  adminSessions: defineTable({
+    token: v.string(),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  }).index("by_token", ["token"]),
 });
