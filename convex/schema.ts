@@ -26,6 +26,7 @@ export default defineSchema({
     status: v.string(), // "Pending" | "Dispatched" | "Delivered" | "Cancelled"
     date: v.string(),
     estimatedDelivery: v.string(),
+    adminNotes: v.optional(v.string()),
   }).index("by_status", ["status"]),
 
   reviews: defineTable({

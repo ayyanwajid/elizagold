@@ -45,6 +45,38 @@ export const listOrders = query({
   },
 });
 
+export const updateOrderDetails = mutation({
+  args: {
+    token: v.string(),
+    id: v.id("orders"),
+    customer: v.object({
+      fullName: v.string(),
+      phone: v.string(),
+      city: v.string(),
+      address: v.string(),
+    }),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx: any, args: any) => {
+    await requireAdminSession(ctx, args.token);
+    await ctx.db.patch(args.id, { 
+      customer: args.customer,
+      adminNotes: args.adminNotes 
+    });
+  },
+});
+
+export const deleteOrder = mutation({
+  args: {
+    token: v.string(),
+    id: v.id("orders"),
+  },
+  handler: async (ctx: any, args: any) => {
+    await requireAdminSession(ctx, args.token);
+    await ctx.db.delete(args.id);
+  },
+});
+
 export const updateOrderStatus = mutation({
   args: {
     token: v.string(),

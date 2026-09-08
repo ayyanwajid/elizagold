@@ -246,7 +246,8 @@ export default function Home() {
     return () => clearInterval(toastInterval);
   }, [SOCIAL_PROOF_TOASTS.length]);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
+  const selectedCity = watch("city");
   const { register: registerReview, handleSubmit: handleSubmitReview, reset: resetReviewForm } = useForm();
 
   const galleryImages = [
@@ -344,7 +345,7 @@ export default function Home() {
       customer: {
         fullName: String(data.fullName || ""),
         phone: String(data.phone || ""),
-        city: String(data.city || ""),
+        city: String(data.city === "Other City" ? data.otherCityName : data.city || ""),
         address: String(data.address || "")
       },
       items: cartItems,
@@ -1536,6 +1537,21 @@ export default function Home() {
                           {errors.city && <span className="text-xs text-red-600 font-bold mt-1 block">⚠ City is required</span>}
                         </div>
 
+
+                        {selectedCity === "Other City" && (
+                          <div className="mb-4">
+                            <label className="block text-xs font-bold text-gray-800 uppercase tracking-wide mb-1">
+                              Enter Your City <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              {...register("otherCityName", { required: "Please enter your city name" })}
+                              placeholder="e.g., Mirpur Khas"
+                              className="w-full px-3.5 py-2.5 text-sm border-2 border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-[#0b2912] focus:ring-2 focus:ring-[#0b2912]/20 transition-all font-medium"
+                            />
+                            {errors.otherCityName && <span className="text-xs text-red-600 font-bold mt-1 block">⚠️ {String(errors.otherCityName.message)}</span>}
+                          </div>
+                        )}
                         <div>
                           <label className="block text-xs font-bold text-gray-800 uppercase tracking-wide mb-1">
                             Full Delivery Street Address <span className="text-red-500">*</span>
