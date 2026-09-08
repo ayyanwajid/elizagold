@@ -421,6 +421,40 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] font-sans selection:bg-[#d4af37]/20 selection:text-[#0b2912] overflow-x-hidden" suppressHydrationWarning>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": "Eliza Gold Roghan-e-Azam Misali Hair Oil",
+            "image": [
+              "https://eliza.pk/assets/product-1.webp"
+            ],
+            "description": "Natural herbal blend made with trusted ingredients for healthier-looking hair. Eliza Gold Roghan-e-Azam Misali Hair Oil helps nourish and strengthen your hair.",
+            "brand": {
+              "@type": "Brand",
+              "name": "Eliza Gold"
+            },
+            "offers": {
+              "@type": "AggregateOffer",
+              "url": "https://eliza.pk",
+              "priceCurrency": "PKR",
+              "lowPrice": "1299",
+              "highPrice": "3499",
+              "offerCount": "3",
+              "availability": "https://schema.org/InStock",
+              "itemCondition": "https://schema.org/NewCondition"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "reviewCount": "128"
+            }
+          })
+        }}
+      />
+
       
       {/* ANNOUNCEMENT BAR WITH LIVE COUNTDOWN TIMER */}
       <div className="bg-[#0b2912] text-white text-xs py-2.5 px-4 text-center tracking-widest uppercase font-semibold flex flex-wrap items-center justify-center gap-2 border-b border-[#d4af37]/20">
@@ -528,7 +562,7 @@ export default function Home() {
                   >
                     <Image
                       src={img}
-                      alt={`Thumbnail ${idx + 1}`}
+                      alt={`Eliza Gold Roghan-e-Azam Thumbnail ${idx + 1}`}
                       fill
                       sizes="100px"
                       quality={70}
