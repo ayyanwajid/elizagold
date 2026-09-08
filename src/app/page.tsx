@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-export const dynamic = "force-dynamic";
+// NOTE: No force-dynamic — allows Next.js static/ISR caching for better performance
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm, FieldValues } from "react-hook-form";
-import Lenis from "lenis";
 import {
   X,
   ArrowRight,
@@ -150,7 +149,16 @@ export default function Home() {
   const couponsQuery = useQuery(api.coupons.listCoupons) as CouponDoc[] | undefined;
 
   const announcementText = settingsQuery?.announcementText ?? "FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN";
-  const whatsappNumber = settingsQuery?.whatsappNumber ?? "+923287657890";
+  const whatsappNumber = settingsQuery?.whatsappNumber ?? "03287657890";
+
+  // Normalize any Pakistani number format to wa.me-compatible international digits
+  // Handles: "03XXXXXXXXX" → "923XXXXXXXXX", "+923XXXXXXXXX" → "923XXXXXXXXX", "923XXXXXXXXX" stays
+  const toWaNumber = (num: string) => {
+    const digits = num.replace(/[^0-9]/g, ""); // strip +, spaces, dashes
+    if (digits.startsWith("0")) return "92" + digits.slice(1); // 03XX → 923XX
+    if (digits.startsWith("92")) return digits;                  // already international
+    return "92" + digits;                                        // bare number fallback
+  };
   const freeDeliverySiteWide = settingsQuery?.freeDeliverySiteWide ?? false;
   const singleBottleShippingFee = settingsQuery?.singleBottleShippingFee ?? 150;
   const activeCoupons = useMemo(() => (couponsQuery ?? []).filter((c) => c.active), [couponsQuery]);
@@ -250,31 +258,12 @@ export default function Home() {
     "/assets/product-5.webp"
   ];
 
-  // Preload gallery images in browser memory for 0ms instant thumbnail switching
-  useEffect(() => {
-    galleryImages.forEach((src) => {
-      const img = new window.Image();
-      img.src = src;
-    });
-  }, []);
+  // Preload only the first (hero/LCP) image — skip JS preloading rest
+  // next/image handles lazy loading of below-fold thumbnails automatically
 
-  // Initialize Lenis smooth scroll
-  useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    });
+  // CSS scroll-behavior: smooth handles smooth scrolling (set in globals.css)
+  // Lenis removed — it was adding ~25KB JS weight with no perceivable benefit
 
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
 
   // Cart helper functions
   const handleAddToCart = () => {
@@ -430,7 +419,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] font-sans selection:bg-[#d4af37]/20 selection:text-[#0b2912] overflow-x-hidden">
+    <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] font-sans selection:bg-[#d4af37]/20 selection:text-[#0b2912] overflow-x-hidden" suppressHydrationWarning>
       
       {/* ANNOUNCEMENT BAR WITH LIVE COUNTDOWN TIMER */}
       <div className="bg-[#0b2912] text-white text-xs py-2.5 px-4 text-center tracking-widest uppercase font-semibold flex flex-wrap items-center justify-center gap-2 border-b border-[#d4af37]/20">
@@ -448,12 +437,13 @@ export default function Home() {
         <a href="#product-buy" className="flex items-center gap-2.5 sm:gap-4 group">
           <div className="relative w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-black/40 border-2 border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.5)] overflow-hidden flex items-center justify-center p-0.5 sm:p-1 shrink-0 group-hover:scale-105 transition-transform">
             <Image
-              src="/assets/logo-icon.png"
+              src="/assets/logo-icon.webp"
               alt="Eliza Gold Emblem Icon"
               width={100}
               height={100}
               className="w-full h-full object-cover mix-blend-screen transform scale-110"
               priority
+              fetchPriority="high"
             />
           </div>
           <div className="flex flex-col">
@@ -984,10 +974,12 @@ export default function Home() {
               <div className="lg:col-span-5 relative group">
                 <div className="relative rounded-3xl overflow-hidden border-2 border-[#d4af37]/60 shadow-[0_0_40px_rgba(212,175,55,0.3)] bg-black">
                   <Image
-                    src="/assets/product-6.png"
+                    src="/assets/product-6.webp"
                     alt="Eliza Gold Brand Ambassador Model"
                     width={700}
                     height={1000}
+                    sizes="(max-width: 1024px) 100vw, 45vw"
+                    quality={85}
                     className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
                   />
                   {/* Luxury Floating Glass Badges */}
@@ -1276,11 +1268,13 @@ export default function Home() {
             <a href="#product-buy" className="flex items-center gap-3 group inline-flex">
               <div className="relative w-12 h-12 rounded-full bg-black/40 border-2 border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.4)] overflow-hidden flex items-center justify-center p-1 group-hover:scale-105 transition-transform">
                 <Image
-                  src="/assets/logo-icon.png"
+                  src="/assets/logo-icon.webp"
                   alt="Eliza Gold Emblem Icon"
-                  width={80}
-                  height={80}
+                  width={100}
+                  height={100}
                   className="w-full h-full object-cover mix-blend-screen transform scale-110"
+                  priority
+                  fetchPriority="high"
                 />
               </div>
               <div className="flex flex-col">
@@ -1325,7 +1319,7 @@ export default function Home() {
             </h4>
             <div className="space-y-2 text-xs text-gray-300">
               <a
-                href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
+                href={`https://wa.me/${toWaNumber(whatsappNumber)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 text-emerald-400 font-bold hover:underline bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-lg"
@@ -1392,7 +1386,7 @@ export default function Home() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-lg bg-[#faf8f5] shadow-2xl z-[101] flex flex-col max-h-screen"
+              className="fixed top-0 right-0 h-full w-full sm:max-w-lg bg-[#faf8f5] shadow-2xl z-[101] flex flex-col max-h-screen overflow-hidden"
             >
               {/* Drawer Header */}
               <div className="p-4 sm:p-5 border-b border-[#e7e1d5] bg-white flex items-center justify-between shrink-0">
@@ -1605,7 +1599,7 @@ export default function Home() {
                     </motion.button>
 
                     <a
-                      href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=Hi%20Eliza%20Gold,%20I%20want%20to%20order%20${encodeURIComponent(cartItems[0]?.bundleTitle || "Roghan-e-Azam Hair Oil")}`}
+                      href={`https://wa.me/${toWaNumber(whatsappNumber || "03001234567")}?text=Hi%20Eliza%20Gold,%20I%20want%20to%20order%20${encodeURIComponent(cartItems[0]?.bundleTitle || "Roghan-e-Azam Hair Oil")}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full mt-2.5 bg-[#25D366] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#1ebd59] transition-colors flex items-center justify-center gap-2 shadow-sm"
@@ -1670,7 +1664,7 @@ export default function Home() {
 
               <div className="space-y-3">
                 <a
-                  href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}?text=Hi%20Eliza%20Gold,%20I%20just%20placed%20order%20${orderConfirmed.orderId}`}
+                  href={`https://wa.me/${toWaNumber(whatsappNumber)}?text=Hi%20Eliza%20Gold,%20I%20just%20placed%20order%20${orderConfirmed.orderId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-[#20ba5a] transition-colors"
@@ -1769,11 +1763,12 @@ export default function Home() {
       </AnimatePresence>
 
       {/* FLOATING WHATSAPP BUTTON */}
+      {/* On mobile: sits above the sticky order bar (bottom-[4.5rem]). On desktop: bottom-6 */}
       <a
-        href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
+        href={`https://wa.me/${toWaNumber(whatsappNumber)}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-30 bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2 font-bold text-xs"
+        className="fixed bottom-[4.5rem] sm:bottom-6 right-4 sm:right-6 z-50 bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2 font-bold text-xs"
       >
         <MessageCircle className="w-5 h-5" />
         <span className="hidden sm:inline">WhatsApp Order</span>
@@ -1786,16 +1781,18 @@ export default function Home() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-40 bg-[#041207]/95 backdrop-blur-lg border-t border-[#d4af37]/40 p-3 sm:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.5)] flex items-center justify-between"
+            className="fixed bottom-0 left-0 right-0 z-40 bg-[#041207]/95 backdrop-blur-lg border-t border-[#d4af37]/40 px-4 py-3 pb-safe sm:hidden shadow-[0_-5px_20px_rgba(0,0,0,0.5)] flex items-center justify-between gap-2"
           >
-            <div>
-              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">Eliza Gold Hair Oil</span>
-              <span className="text-sm font-extrabold text-[#f7e092]">Rs. {selectedBundle.price.toLocaleString()}</span>
-              <span className="text-[10px] text-gray-400 line-through ml-1.5">Rs. {selectedBundle.originalPrice.toLocaleString()}</span>
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block truncate">Eliza Gold Hair Oil</span>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="text-sm font-extrabold text-[#f7e092]">Rs. {selectedBundle.price.toLocaleString()}</span>
+                <span className="text-[10px] text-gray-400 line-through">Rs. {selectedBundle.originalPrice.toLocaleString()}</span>
+              </div>
             </div>
             <button
               onClick={() => handleBuyNow()}
-              className="bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] px-4 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              className="bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] px-4 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <ShoppingBag className="w-3.5 h-3.5 text-[#041207]" />
               <span>Order Now</span>
