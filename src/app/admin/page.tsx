@@ -82,7 +82,7 @@ interface AdminReview {
   verified: boolean;
 }
 
-// â”€â”€ DATE HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Ã¢â€â‚¬Ã¢â€â‚¬ DATE HELPERS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function parseOrderDate(dateStr: string): Date {
@@ -137,15 +137,17 @@ function isInDateRange(orderDate: Date, range: string): boolean {
 
 type DateGroup = { dateKey: string; label: string; orders: AdminOrder[] };
 
-function groupOrdersByDate(orders: AdminOrder[]): DateGroup[] {
+function groupOrdersByDate(orders: AdminOrder[], sortOrder: "NEWEST" | "OLDEST" = "NEWEST"): DateGroup[] {
   const map = new Map<string, AdminOrder[]>();
   for (const o of orders) {
     const key = getDateKey(parseOrderDate(o.date));
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(o);
   }
-  // Sort date keys descending (newest first)
-  const sortedKeys = Array.from(map.keys()).sort((a, b) => b.localeCompare(a));
+  // Sort date keys descending (newest first) or ascending (oldest first)
+  const sortedKeys = Array.from(map.keys()).sort((a, b) => 
+    sortOrder === "NEWEST" ? b.localeCompare(a) : a.localeCompare(b)
+  );
   return sortedKeys.map(key => ({ dateKey: key, label: getDateLabel(key), orders: map.get(key)! }));
 }
 
@@ -245,7 +247,7 @@ export default function AdminDashboard() {
   const prevOrderCountRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Store Settings State â€” loaded from Convex (source of truth for every
+  // Store Settings State Ã¢â‚¬â€ loaded from Convex (source of truth for every
   // visitor), edited locally as a draft, persisted via updateSettings.
   const [productPrices, setProductPrices] = useState({ bottle1: 1499, bottle2: 2699, bottle3: 3699 });
   const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
@@ -260,8 +262,8 @@ export default function AdminDashboard() {
   const [newCouponDiscount, setNewCouponDiscount] = useState("");
   const [newCouponValue, setNewCouponValue] = useState("");
 
-  // â”€â”€ CONVEX LIVE SUBSCRIPTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // "skip" until we hold a verified session token â€” the query itself
+  // Ã¢â€â‚¬Ã¢â€â‚¬ CONVEX LIVE SUBSCRIPTIONS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // "skip" until we hold a verified session token Ã¢â‚¬â€ the query itself
   // rejects unauthenticated calls server-side, but there's no reason to
   // even attempt it before login.
   const convexOrders = useQuery(api.orders.listOrders, adminToken ? { token: adminToken } : "skip");
@@ -280,7 +282,7 @@ export default function AdminDashboard() {
   const deleteCouponMutation = useMutation(api.coupons.deleteCoupon);
   const convexClient = useConvex();
 
-  // Seed the local draft fields from Convex once settings load â€” only once,
+  // Seed the local draft fields from Convex once settings load Ã¢â‚¬â€ only once,
   // so a live-query refresh (e.g. right after this admin's own save) doesn't
   // clobber an in-progress edit on another field.
   useEffect(() => {
@@ -294,7 +296,7 @@ export default function AdminDashboard() {
     }
   }, [convexSettings]);
 
-  // â”€â”€ AUTH & INITIAL LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ AUTH & INITIAL LOAD Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   useEffect(() => {
     const savedToken = localStorage.getItem("eliza_admin_token");
     if (savedToken) setAdminToken(savedToken);
@@ -312,7 +314,7 @@ export default function AdminDashboard() {
     } catch { setOrders(SAMPLE_ORDERS); }
   }, []);
 
-  // â”€â”€ SYNC CONVEX ORDERS LIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ SYNC CONVEX ORDERS LIVE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   useEffect(() => {
     if (!convexOrders || !Array.isArray(convexOrders) || convexOrders.length === 0) return;
     const formatted: AdminOrder[] = convexOrders.map((o: any) => ({
@@ -333,7 +335,7 @@ export default function AdminDashboard() {
     setOrders(formatted);
   }, [convexOrders, isAuthenticated]);
 
-  // â”€â”€ SYNC CONVEX REVIEWS LIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ SYNC CONVEX REVIEWS LIVE Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   useEffect(() => {
     if (convexReviews && Array.isArray(convexReviews)) {
       setReviews(convexReviews.map((r: any) => ({
@@ -343,7 +345,7 @@ export default function AdminDashboard() {
     }
   }, [convexReviews]);
 
-  // â”€â”€ HANDLERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ HANDLERS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutUntil && Date.now() < lockoutUntil) return;
@@ -411,7 +413,7 @@ export default function AdminDashboard() {
           date: order.date,
         },
       });
-      alert("âœ… Order synced to Google Sheets!");
+      alert("Ã¢Å“â€¦ Order synced to Google Sheets!");
     } catch (error: any) {
       alert("Failed to sync: " + (error.message || "Unknown error"));
     } finally {
@@ -433,7 +435,7 @@ export default function AdminDashboard() {
   };
 
   // All settings live in one Convex document, so both "Save Prices" and
-  // "Save Settings" persist the full current draft â€” whichever tab the
+  // "Save Settings" persist the full current draft Ã¢â‚¬â€ whichever tab the
   // admin is on, nothing else in the draft gets reverted.
   const persistSettings = useCallback(async () => {
     if (!adminToken) return false;
@@ -454,7 +456,7 @@ export default function AdminDashboard() {
 
   const saveProductPrices = async () => {
     const ok = await persistSettings();
-    alert(ok ? "Prices saved â€” every visitor will now see the updated prices." : "Could not save prices. Please try again.");
+    alert(ok ? "Prices saved Ã¢â‚¬â€ every visitor will now see the updated prices." : "Could not save prices. Please try again.");
   };
 
   const saveSettings = async () => {
@@ -467,7 +469,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // â”€â”€ METRICS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ METRICS Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const deliveredRevenue = orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + (o.total || 0), 0);
   const pendingCount = orders.filter(o => o.status === "Pending").length;
@@ -506,7 +508,7 @@ export default function AdminDashboard() {
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const dateGroups = groupOrdersByDate(currentOrders);
+  const dateGroups = groupOrdersByDate(currentOrders, sortOrder);
 
   // Today's summary stats
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
@@ -541,7 +543,7 @@ export default function AdminDashboard() {
     setSelectedOrders(new Set());
   };
 
-  // â”€â”€ LOGIN SCREEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ LOGIN SCREEN Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   if (!isAuthenticated) {
     const isLockedOut = !!lockoutUntil && Date.now() < lockoutUntil;
     return (
@@ -574,7 +576,7 @@ export default function AdminDashboard() {
                 <p className="text-xs text-[#e29184] mt-2 font-medium">Incorrect passcode. Please try again.</p>
               )}
               {isLockedOut && (
-                <p className="text-xs text-[#e29184] mt-2 font-medium">Too many attempts â€” try again in a minute.</p>
+                <p className="text-xs text-[#e29184] mt-2 font-medium">Too many attempts Ã¢â‚¬â€ try again in a minute.</p>
               )}
             </div>
             <button
@@ -593,13 +595,13 @@ export default function AdminDashboard() {
               )}
             </button>
           </form>
-          <Link href="/" className="inline-flex items-center gap-1 text-xs text-[#c9a227] hover:underline pt-1">â† Return to Storefront</Link>
+          <Link href="/" className="inline-flex items-center gap-1 text-xs text-[#c9a227] hover:underline pt-1">Ã¢â€ Â Return to Storefront</Link>
         </div>
       </div>
     );
   }
 
-  // â”€â”€ MAIN DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Ã¢â€â‚¬Ã¢â€â‚¬ MAIN DASHBOARD Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   return (
     <SessionBoundary onExpire={handleSessionExpired}>
     <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] flex flex-col font-sans">
@@ -615,8 +617,8 @@ export default function AdminDashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm text-[#dab53a] uppercase tracking-wide">New Order Received</p>
-              <p className="text-xs font-bold mt-1">{newOrderAlert.customer.fullName} â€” {newOrderAlert.customer.city}</p>
-              <p className="text-xs text-gray-300">{newOrderAlert.items?.[0]?.bundleTitle} Â· Rs. {newOrderAlert.total?.toLocaleString()}</p>
+              <p className="text-xs font-bold mt-1">{newOrderAlert.customer.fullName} Ã¢â‚¬â€ {newOrderAlert.customer.city}</p>
+              <p className="text-xs text-gray-300">{newOrderAlert.items?.[0]?.bundleTitle} Ã‚Â· Rs. {newOrderAlert.total?.toLocaleString()}</p>
               <p className="text-[10px] text-gray-400 font-mono mt-0.5">{newOrderAlert.orderId}</p>
             </div>
             <button onClick={() => setNewOrderAlert(null)} className="text-gray-400 hover:text-white shrink-0">
@@ -724,7 +726,7 @@ export default function AdminDashboard() {
         {/* MAIN CONTENT */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
 
-          {/* â•â•â• TAB 1: OVERVIEW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB 1: OVERVIEW Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
           {activeTab === "overview" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -834,7 +836,7 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-2xl border border-[#e7e1d5] p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-gray-900 text-sm">Recent Orders</h3>
-                  <button onClick={() => setActiveTab("orders")} className="text-xs text-[#0b2912] font-bold hover:underline">View All â†’</button>
+                  <button onClick={() => setActiveTab("orders")} className="text-xs text-[#0b2912] font-bold hover:underline">View All Ã¢â€ â€™</button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse min-w-[500px]">
@@ -869,10 +871,10 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* â•â•â• TAB 2: ORDERS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB 2: ORDERS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
           {activeTab === "orders" && (
             <div className="space-y-4">
-              {/* â”€â”€ Header â”€â”€ */}
+              {/* Ã¢â€â‚¬Ã¢â€â‚¬ Header Ã¢â€â‚¬Ã¢â€â‚¬ */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="font-serif text-2xl font-bold text-gray-900">Orders Manager</h2>
@@ -884,7 +886,7 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              {/* â”€â”€ Today's Summary Banner â”€â”€ */}
+              {/* Ã¢â€â‚¬Ã¢â€â‚¬ Today's Summary Banner Ã¢â€â‚¬Ã¢â€â‚¬ */}
               <div className="bg-gradient-to-r from-[#0b2912] to-[#154620] rounded-2xl p-4 flex flex-wrap items-center gap-6 text-white shadow-lg">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-[#a9812e]" />
@@ -908,7 +910,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* â”€â”€ Date Range Pills â”€â”€ */}
+              {/* Ã¢â€â‚¬Ã¢â€â‚¬ Date Range Pills Ã¢â€â‚¬Ã¢â€â‚¬ */}
               <div className="flex flex-wrap gap-2">
                 {([["TODAY","Today"],["YESTERDAY","Yesterday"],["7DAYS","Last 7 Days"],["MONTH","This Month"],["ALL","All Time"]] as const).map(([val, label]) => (
                   <button
@@ -925,7 +927,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
 
-              {/* â”€â”€ Search & Filter Bar â”€â”€ */}
+              {/* Ã¢â€â‚¬Ã¢â€â‚¬ Search & Filter Bar Ã¢â€â‚¬Ã¢â€â‚¬ */}
               <div className="bg-white p-4 rounded-2xl border border-[#e7e1d5] flex flex-col sm:flex-row items-center gap-3 shadow-sm">
                 <div className="relative w-full sm:flex-1">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
@@ -955,7 +957,7 @@ export default function AdminDashboard() {
                 <span className="text-xs text-gray-400 font-medium shrink-0">{filteredOrders.length} orders</span>
               </div>
 
-              {/* â”€â”€ Bulk Actions Bar â”€â”€ */}
+              {/* Ã¢â€â‚¬Ã¢â€â‚¬ Bulk Actions Bar Ã¢â€â‚¬Ã¢â€â‚¬ */}
               <AnimatePresence>
                 {selectedOrders.size > 0 && (
                   <motion.div
@@ -974,7 +976,7 @@ export default function AdminDashboard() {
                 )}
               </AnimatePresence>
 
-              {/* â”€â”€ Orders Table with Date Groups â”€â”€ */}
+              {/* Ã¢â€â‚¬Ã¢â€â‚¬ Orders Table with Date Groups Ã¢â€â‚¬Ã¢â€â‚¬ */}
               <div className="bg-white rounded-2xl border border-[#e7e1d5] overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse min-w-[850px]">
@@ -996,7 +998,7 @@ export default function AdminDashboard() {
                     <tbody className="divide-y divide-gray-200">
                       {dateGroups.map(group => (
                         <React.Fragment key={group.dateKey}>
-                          {/* â”€â”€ Date Group Header â”€â”€ */}
+                          {/* Ã¢â€â‚¬Ã¢â€â‚¬ Date Group Header Ã¢â€â‚¬Ã¢â€â‚¬ */}
                           <tr className="bg-[#faf8f5]">
                             <td colSpan={7} className="py-2.5 px-4">
                               <div className="flex items-center gap-2">
@@ -1006,7 +1008,7 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                           </tr>
-                          {/* â”€â”€ Orders in this date group â”€â”€ */}
+                          {/* Ã¢â€â‚¬Ã¢â€â‚¬ Orders in this date group Ã¢â€â‚¬Ã¢â€â‚¬ */}
                           {group.orders.map(o => {
                             const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG.Pending;
                             const isExpanded = expandedOrderId === o.orderId;
@@ -1114,7 +1116,7 @@ export default function AdminDashboard() {
                                         <div>
                                           <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Items Ordered</span>
                                           {o.items?.map((item, i) => (
-                                            <p key={i} className="font-semibold text-gray-800">{item.bundleTitle} Ã— {item.quantity} â€” Rs. {item.price?.toLocaleString()}</p>
+                                            <p key={i} className="font-semibold text-gray-800">{item.bundleTitle} Ãƒâ€” {item.quantity} Ã¢â‚¬â€ Rs. {item.price?.toLocaleString()}</p>
                                           ))}
                                         </div>
                                         <div>
@@ -1151,12 +1153,12 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-                {/* â”€â”€ Improved Pagination â”€â”€ */}
+                {/* -- Improved Pagination -- */}
                 {totalPages >= 1 && (
                   <div className="p-4 border-t border-[#e7e1d5] flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-500">
-                        Showing {filteredOrders.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}â€“{Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
+                        Showing {filteredOrders.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
                       </span>
                       <select
                         value={itemsPerPage}
@@ -1295,7 +1297,7 @@ export default function AdminDashboard() {
                 )}
               </AnimatePresence>
 
-          {/* â•â•â• TAB 3: REVIEWS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB 3: REVIEWS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
           {activeTab === "reviews" && (
             <div className="space-y-5">
               <div>
@@ -1354,17 +1356,17 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* â•â•â• TAB 4: PRODUCTS & PRICING â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB 4: PRODUCTS & PRICING Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
           {activeTab === "products" && (
             <div className="space-y-6">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-gray-900">Product Bundles & Pricing</h2>
-                <p className="text-xs text-gray-500">Update bundle prices â€” changes sync to storefront on save</p>
+                <p className="text-xs text-gray-500">Update bundle prices Ã¢â‚¬â€ changes sync to storefront on save</p>
               </div>
 
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-2 text-xs text-emerald-800">
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>Prices are stored centrally â€” once saved, every visitor sees the new price immediately, on any device.</span>
+                <span>Prices are stored centrally Ã¢â‚¬â€ once saved, every visitor sees the new price immediately, on any device.</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1395,8 +1397,8 @@ export default function AdminDashboard() {
 
               <div className="bg-white p-4 rounded-2xl border border-[#e7e1d5] flex items-center justify-between">
                 <div className="text-xs text-gray-600">
-                  <span className="font-bold">1 Bottle:</span> Rs. {productPrices.bottle1.toLocaleString()} &nbsp;Â·&nbsp;
-                  <span className="font-bold">2 Bottles:</span> Rs. {productPrices.bottle2.toLocaleString()} &nbsp;Â·&nbsp;
+                  <span className="font-bold">1 Bottle:</span> Rs. {productPrices.bottle1.toLocaleString()} &nbsp;Ã‚Â·&nbsp;
+                  <span className="font-bold">2 Bottles:</span> Rs. {productPrices.bottle2.toLocaleString()} &nbsp;Ã‚Â·&nbsp;
                   <span className="font-bold">3 Bottles:</span> Rs. {productPrices.bottle3.toLocaleString()}
                 </div>
                 <button onClick={saveProductPrices} className="bg-[#0b2912] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#154620] transition-colors">
@@ -1406,12 +1408,12 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* â•â•â• TAB 5: COUPONS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB 5: COUPONS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
           {activeTab === "coupons" && (
             <div className="space-y-6">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-gray-900">Coupon & Discount Manager</h2>
-                <p className="text-xs text-gray-500">Create & activate promo codes â€” changes apply at checkout for every customer, instantly</p>
+                <p className="text-xs text-gray-500">Create & activate promo codes Ã¢â‚¬â€ changes apply at checkout for every customer, instantly</p>
               </div>
 
               {/* Create Coupon */}
@@ -1471,7 +1473,7 @@ export default function AdminDashboard() {
                       <tr key={c._id} className="hover:bg-gray-50">
                         <td className="py-3.5 px-4 font-black text-[#0b2912] font-mono tracking-wider">{c.code}</td>
                         <td className="py-3.5 px-4 font-semibold">{c.discount}</td>
-                        <td className="py-3.5 px-4 font-semibold">{c.discountValue || "â€”"}%</td>
+                        <td className="py-3.5 px-4 font-semibold">{c.discountValue || "Ã¢â‚¬â€"}%</td>
                         <td className="py-3.5 px-4">
                           <button onClick={() => adminToken && toggleCouponMutation({ token: adminToken, id: c._id, active: !c.active }).catch(() => alert("Could not update coupon."))}>
                             {c.active
@@ -1491,7 +1493,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* â•â•â• TAB 6: STORE SETTINGS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+          {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â TAB 6: STORE SETTINGS Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
           {activeTab === "settings" && (
             <div className="space-y-6">
               <div>
@@ -1535,7 +1537,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700">Free Delivery Site-Wide</label>
-                    <p className="text-[10px] text-gray-400 mt-0.5">When on, every order ships free regardless of bundle â€” useful for promotions.</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">When on, every order ships free regardless of bundle Ã¢â‚¬â€ useful for promotions.</p>
                   </div>
                   <button
                     type="button"
@@ -1558,7 +1560,7 @@ export default function AdminDashboard() {
                     className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl font-bold focus:border-[#0b2912] outline-none disabled:opacity-50 disabled:bg-gray-50"
                   />
                   <p className="text-[10px] text-gray-400 mt-1">
-                    Charged only on the 1-Bottle Starter Pack â€” 2 &amp; 3-Bottle packs always ship free.
+                    Charged only on the 1-Bottle Starter Pack Ã¢â‚¬â€ 2 &amp; 3-Bottle packs always ship free.
                     {freeDeliverySiteWide && " Currently ignored because free delivery is on, site-wide."}
                   </p>
                 </div>
@@ -1597,7 +1599,7 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* â•â•â• PRINT COURIER SLIP MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
+      {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â PRINT COURIER SLIP MODAL Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
       {selectedPrintOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white max-w-sm w-full rounded-2xl p-6 space-y-4 border-2 border-black shadow-2xl font-sans text-black">
