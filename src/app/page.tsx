@@ -1612,7 +1612,7 @@ export default function Home() {
                         <span>Processing Order...</span>
                       ) : (
                         <>
-                          <span>Complete Order â€” Rs. {grandTotal.toLocaleString()}</span>
+                          <span>Complete Order - Rs. {grandTotal.toLocaleString()}</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
