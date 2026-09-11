@@ -39,7 +39,9 @@ import {
   PackageCheck,
   X,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Copy,
+  Check
 } from "lucide-react";
 
 import { useQuery, useMutation } from "convex/react";
@@ -148,6 +150,18 @@ export default function AdminDashboard() {
   const [editingOrder, setEditingOrder] = useState<AdminOrder | null>(null);
   const [deleteConfirmOrderId, setDeleteConfirmOrderId] = useState<string | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  // Enhancements state
+  const [sortOrder, setSortOrder] = useState<"NEWEST" | "OLDEST">("NEWEST");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // New order notification state
   const [newOrderAlert, setNewOrderAlert] = useState<AdminOrder | null>(null);
@@ -375,7 +389,7 @@ export default function AdminDashboard() {
     bundleMap[bundle] = (bundleMap[bundle] || 0) + 1;
   });
 
-  const filteredOrders = orders.filter(o => {
+  let filteredOrders = orders.filter(o => {
     const q = searchQuery.toLowerCase();
     const matchSearch = !q || o.orderId.toLowerCase().includes(q) ||
       o.customer.fullName.toLowerCase().includes(q) ||
@@ -384,6 +398,13 @@ export default function AdminDashboard() {
     const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  if (sortOrder === "OLDEST") {
+    filteredOrders = [...filteredOrders].reverse();
+  }
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // ── LOGIN SCREEN ───────────────────────────────────────────────────────
   if (!isAuthenticated) {
@@ -734,20 +755,24 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     value={searchQuery}
-                    onChange={e => setSearchQuery(e.target.value)}
+                    onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                     placeholder="Search by name, phone, city or order #..."
                     className="w-full pl-9 pr-4 py-2 text-xs border border-gray-300 rounded-xl outline-none focus:border-[#0b2912]"
                   />
                 </div>
                 <div className="flex items-center gap-2">
                   <Filter className="w-4 h-4 text-gray-400" />
-                  <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="px-3 py-2 text-xs border border-gray-300 rounded-xl outline-none bg-white font-bold text-gray-700">
+                  <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-xl outline-none bg-white font-bold text-gray-700">
                     <option value="ALL">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Processing">Processing</option>
                     <option value="Dispatched">Dispatched</option>
                     <option value="Delivered">Delivered</option>
                     <option value="Cancelled">Cancelled</option>
+                  </select>
+                  <select value={sortOrder} onChange={e => { setSortOrder(e.target.value as "NEWEST" | "OLDEST"); setCurrentPage(1); }} className="px-3 py-2 text-xs border border-gray-300 rounded-xl outline-none bg-white font-bold text-gray-700">
+                    <option value="NEWEST">Newest First</option>
+                    <option value="OLDEST">Oldest First</option>
                   </select>
                 </div>
                 <span className="text-xs text-gray-400 font-medium shrink-0">{filteredOrders.length} orders</span>
@@ -769,7 +794,7 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredOrders.map(o => {
+                      {currentOrders.map(o => {
                         const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG.Pending;
                         const isExpanded = expandedOrderId === o.orderId;
                         return (
@@ -783,10 +808,18 @@ export default function AdminDashboard() {
                                 </button>
                               </td>
                               <td className="py-3.5 px-4">
-                                <p className="font-bold text-gray-900">{o.customer.fullName}</p>
-                                <a href={`tel:${o.customer.phone}`} className="text-[11px] text-blue-600 flex items-center gap-1 mt-0.5 hover:underline">
-                                  <Phone className="w-3 h-3" />{o.customer.phone}
-                                </a>
+                                <p className="font-bold text-gray-900 flex items-center gap-1.5">
+                                  {o.customer.fullName}
+                                  <button onClick={() => handleCopy(o.customer.fullName, `name-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912]" title="Copy Name">
+                                    {copiedId === `name-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                  </button>
+                                </p>
+                                <div className="text-[11px] text-blue-600 flex items-center gap-1 mt-0.5 hover:underline">
+                                  <a href={`tel:${o.customer.phone}`}><Phone className="w-3 h-3" />{o.customer.phone}</a>
+                                  <button onClick={() => handleCopy(o.customer.phone, `phone-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912]" title="Copy Phone">
+                                    {copiedId === `phone-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                  </button>
+                                </div>
                               </td>
                               <td className="py-3.5 px-4 font-semibold text-gray-700">
                                 <div className="flex items-center gap-1">
@@ -845,7 +878,12 @@ export default function AdminDashboard() {
                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                                     <div>
                                       <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Full Address</span>
-                                      <p className="font-semibold text-gray-800">{o.customer.address}</p>
+                                      <p className="font-semibold text-gray-800 flex items-start gap-1.5">
+                                        {o.customer.address}
+                                        <button onClick={() => handleCopy(o.customer.address, `address-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912] mt-0.5 shrink-0" title="Copy Address">
+                                          {copiedId === `address-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                        </button>
+                                      </p>
                                       <p className="text-gray-600">{o.customer.city}</p>
                                     </div>
                                     <div>
@@ -886,6 +924,29 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+                {totalPages > 1 && (
+                  <div className="p-4 border-t border-[#e7e1d5] flex items-center justify-between bg-gray-50">
+                    <span className="text-xs text-gray-500">
+                      Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
+                    </span>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <button 
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -965,11 +1026,18 @@ export default function AdminDashboard() {
                         <button onClick={() => setDeleteConfirmOrderId(null)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl">Cancel</button>
                         <button onClick={async () => {
                           const order = orders.find(o => o.orderId === deleteConfirmOrderId);
-                          if (!adminToken || !order?._id) return;
-                          try {
-                            await deleteOrderMutation({ token: adminToken, id: order._id });
-                            setDeleteConfirmOrderId(null);
-                          } catch (err) { alert("Failed to delete order"); }
+                          if (!order) return;
+                          
+                          const updatedOrders = orders.filter(o => o.orderId !== deleteConfirmOrderId);
+                          setOrders(updatedOrders);
+                          localStorage.setItem("eliza_orders_list", JSON.stringify(updatedOrders));
+
+                          if (adminToken && order._id) {
+                            try {
+                              await deleteOrderMutation({ token: adminToken, id: order._id as any });
+                            } catch (err) { alert("Failed to delete order from server"); }
+                          }
+                          setDeleteConfirmOrderId(null);
                         }} className="px-5 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl">Yes, Delete</button>
                       </div>
                     </motion.div>
