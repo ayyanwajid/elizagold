@@ -151,6 +151,13 @@ function groupOrdersByDate(orders: AdminOrder[], sortOrder: "NEWEST" | "OLDEST" 
   return sortedKeys.map(key => ({ dateKey: key, label: getDateLabel(key), orders: map.get(key)! }));
 }
 
+const toWaNumber = (num: string) => {
+  const digits = num.replace(/[^0-9]/g, "");
+  if (digits.startsWith("0")) return "92" + digits.slice(1);
+  if (digits.startsWith("92")) return digits;
+  return "92" + digits;
+};
+
 // Sample seed orders for first load
 const SAMPLE_ORDERS: AdminOrder[] = [
   {
@@ -1074,7 +1081,7 @@ function AdminDashboardContent({ adminToken, setAdminToken }: { adminToken: stri
                                         <option value="Cancelled">Cancelled</option>
                                       </select>
                                       <a
-                                        href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                                        href={`https://wa.me/${toWaNumber(o.customer.phone)}?text=${encodeURIComponent(
                                           (o.status || "").trim().toLowerCase() === "pending"
                                             ? `Assalam o Alaikum ${o.customer.fullName}! Thank you for your order ${o.orderId} at Eliza Gold.\n\nPlease reply with *YES* to confirm your order so we can dispatch it via Cash on Delivery (Rs. ${o.total?.toLocaleString()}).\n\nShukriya! `
                                             : `Assalam o Alaikum ${o.customer.fullName}! Aapka Eliza Gold ka order ${o.orderId} abhi *${o.status}* hai. Shukriya! `
