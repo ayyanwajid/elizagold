@@ -1075,10 +1075,10 @@ function AdminDashboardContent({ adminToken, setAdminToken }: { adminToken: stri
                                       </select>
                                       <a
                                         href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
-                                          o.status === "Pending"
-                                            ? `Assalam o Alaikum ${o.customer.fullName}! Thank you for your order ${o.orderId} at Eliza Gold.\n\nPlease reply with *YES* to confirm your order so we can dispatch it via Cash on Delivery (Rs. ${o.total?.toLocaleString()}).\n\nShukriya! 🌿`
-                                            : `Assalam o Alaikum ${o.customer.fullName}! Aapka Eliza Gold ka order ${o.orderId} abhi *${o.status}* hai. Shukriya! 🌿`
-                                        )}`}
+                                          (o.status || "").trim().toLowerCase() === "pending"
+                                            ? `Assalam o Alaikum ${o.customer.fullName}! Thank you for your order ${o.orderId} at Eliza Gold.\n\nPlease reply with *YES* to confirm your order so we can dispatch it via Cash on Delivery (Rs. ${o.total?.toLocaleString()}).\n\nShukriya! `
+                                            : `Assalam o Alaikum ${o.customer.fullName}! Aapka Eliza Gold ka order ${o.orderId} abhi *${o.status}* hai. Shukriya! `
+                                        )}%F0%9F%8C%BF`}
                                         target="_blank"
                                         rel="noreferrer"
                                         className="p-1.5 bg-[#25D366] text-white rounded-lg hover:brightness-110 transition-all inline-flex items-center justify-center shadow-sm"
