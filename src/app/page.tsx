@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-// NOTE: No force-dynamic — allows Next.js static/ISR caching for better performance
+// NOTE: No force-dynamic â€” allows Next.js static/ISR caching for better performance
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
@@ -143,7 +143,7 @@ export default function Home() {
   // State Management
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // Live store settings & coupons — Convex is the source of truth, so a
+  // Live store settings & coupons â€” Convex is the source of truth, so a
   // change the admin saves reaches every visitor, not just their own browser.
   const settingsQuery = useQuery(api.settings.getSettings);
   const couponsQuery = useQuery(api.coupons.listCoupons) as CouponDoc[] | undefined;
@@ -152,10 +152,10 @@ export default function Home() {
   const whatsappNumber = settingsQuery?.whatsappNumber ?? "03287657890";
 
   // Normalize any Pakistani number format to wa.me-compatible international digits
-  // Handles: "03XXXXXXXXX" → "923XXXXXXXXX", "+923XXXXXXXXX" → "923XXXXXXXXX", "923XXXXXXXXX" stays
+  // Handles: "03XXXXXXXXX" â†’ "923XXXXXXXXX", "+923XXXXXXXXX" â†’ "923XXXXXXXXX", "923XXXXXXXXX" stays
   const toWaNumber = (num: string) => {
     const digits = num.replace(/[^0-9]/g, ""); // strip +, spaces, dashes
-    if (digits.startsWith("0")) return "92" + digits.slice(1); // 03XX → 923XX
+    if (digits.startsWith("0")) return "92" + digits.slice(1); // 03XX â†’ 923XX
     if (digits.startsWith("92")) return digits;                  // already international
     return "92" + digits;                                        // bare number fallback
   };
@@ -259,11 +259,11 @@ export default function Home() {
     "/assets/product-5.webp"
   ];
 
-  // Preload only the first (hero/LCP) image — skip JS preloading rest
+  // Preload only the first (hero/LCP) image â€” skip JS preloading rest
   // next/image handles lazy loading of below-fold thumbnails automatically
 
   // CSS scroll-behavior: smooth handles smooth scrolling (set in globals.css)
-  // Lenis removed — it was adding ~25KB JS weight with no perceivable benefit
+  // Lenis removed â€” it was adding ~25KB JS weight with no perceivable benefit
 
 
   // Cart helper functions
@@ -298,7 +298,7 @@ export default function Home() {
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const currentDiscount = discountApplied ? Math.round(subtotal * (discountPercent / 100)) : 0;
   // Per the Shipping Policy: only the 1-Bottle Starter Pack carries a delivery
-  // fee — 2 & 3-Bottle packs are always free, regardless of price. The admin
+  // fee â€” 2 & 3-Bottle packs are always free, regardless of price. The admin
   // can also force free delivery site-wide from the dashboard for promotions.
   const isSingleBottlePack = cartItems[0]?.bundleTitle?.startsWith("1 Bottle") ?? false;
   const isFreeDelivery = cartItems.length > 0 && (freeDeliverySiteWide || !isSingleBottlePack);
@@ -680,27 +680,8 @@ export default function Home() {
                 })}
               </div>
 
-              {/* QUANTITY PICKER & ACTION BUTTONS */}
+              {/* ACTION BUTTONS */}
               <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-4">
-                  <span className="text-xs font-bold uppercase tracking-wider text-gray-700">Qty:</span>
-                  <div className="flex items-center border border-[#e7e1d5] rounded-lg bg-gray-50">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-2.5 text-gray-600 hover:text-black transition-colors"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-10 text-center font-bold text-sm text-gray-900">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="p-2.5 text-gray-600 hover:text-black transition-colors"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
                 {/* Primary Buy Button */}
                 <motion.button
                   whileHover={{ scale: 1.01 }}
@@ -709,7 +690,7 @@ export default function Home() {
                   className="w-full bg-[#0b2912] text-white py-4 px-6 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-[#154620] transition-colors shadow-lg flex items-center justify-center gap-3"
                 >
                   <ShoppingBag className="w-5 h-5" />
-                  <span>Order Now — Cash On Delivery</span>
+                  <span>Order Now â€” Cash On Delivery</span>
                 </motion.button>
 
                 <p className="text-center text-[11px] text-gray-500 font-medium flex items-center justify-center gap-1.5">
@@ -826,7 +807,7 @@ export default function Home() {
                         {/* Gold Crown Badge */}
                         <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#041207] text-[10px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full shadow-md border border-[#fff3b0] mb-2">
                           <Award className="w-3.5 h-3.5" />
-                          <span>Winner • Best Hair Care</span>
+                          <span>Winner â€¢ Best Hair Care</span>
                         </div>
                         <h3 className="font-serif font-bold text-lg text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0]">
                           Eliza Gold Roghan-e-Azam
@@ -965,7 +946,7 @@ export default function Home() {
             <div className="mt-12 bg-white border-2 border-[#d4af37]/40 rounded-2xl p-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-4 text-center sm:text-left">
                 <div className="w-12 h-12 rounded-full bg-[#0b2912] text-[#d4af37] flex items-center justify-center font-bold text-xl shrink-0">
-                  👑
+                  ðŸ‘‘
                 </div>
                 <div>
                   <h4 className="font-serif font-bold text-gray-900 text-lg">Experience Premium Pure Herbal Care</h4>
@@ -996,7 +977,7 @@ export default function Home() {
                 100% Organic & Cold-Pressed Botanicals
               </div>
               <h2 className="font-serif text-3xl sm:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#fff3b0] via-[#d4af37] to-[#fff3b0]">
-                Nature’s Miracle Hair Elixir
+                Natureâ€™s Miracle Hair Elixir
               </h2>
               <p className="text-sm sm:text-base text-emerald-100/80 mt-4 leading-relaxed">
                 Formulated with handpicked organic Ayurvedic herbs, cold-pressed to preserve 100% active nutrients for long, thick, & radiant black hair.
@@ -1027,7 +1008,7 @@ export default function Home() {
                     <Sparkles className="w-5 h-5 text-[#d4af37] animate-spin" />
                     <div>
                       <p className="font-extrabold text-[#f7e092] text-xs">100% Guaranteed Results</p>
-                      <p className="text-[10px] text-gray-300">Shine • Thickness • Root Strength</p>
+                      <p className="text-[10px] text-gray-300">Shine â€¢ Thickness â€¢ Root Strength</p>
                     </div>
                   </div>
                 </div>
@@ -1037,7 +1018,7 @@ export default function Home() {
               <div className="lg:col-span-7 space-y-6">
                 <div className="border-b border-[#d4af37]/30 pb-4">
                   <h3 className="font-serif text-2xl font-bold text-[#f7e092]">Active Botanical Ingredients</h3>
-                  <p className="text-xs text-emerald-200/70 mt-1">Zero mineral oil • Zero silicone • Zero artificial colors</p>
+                  <p className="text-xs text-emerald-200/70 mt-1">Zero mineral oil â€¢ Zero silicone â€¢ Zero artificial colors</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1046,7 +1027,7 @@ export default function Home() {
                   <div className="bg-[#0b2912]/60 backdrop-blur-md border border-[#d4af37]/30 p-5 rounded-2xl hover:border-[#d4af37] transition-all group">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-xl shrink-0">
-                        🟢
+                        ðŸŸ¢
                       </div>
                       <div>
                         <h4 className="font-bold text-white text-base group-hover:text-[#f7e092] transition-colors">Fresh Amla (Gooseberry)</h4>
@@ -1062,7 +1043,7 @@ export default function Home() {
                   <div className="bg-[#0b2912]/60 backdrop-blur-md border border-[#d4af37]/30 p-5 rounded-2xl hover:border-[#d4af37] transition-all group">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-xl shrink-0">
-                        🌵
+                        ðŸŒµ
                       </div>
                       <div>
                         <h4 className="font-bold text-white text-base group-hover:text-[#f7e092] transition-colors">Pure Organic Aloe Vera</h4>
@@ -1078,7 +1059,7 @@ export default function Home() {
                   <div className="bg-[#0b2912]/60 backdrop-blur-md border border-[#d4af37]/30 p-5 rounded-2xl hover:border-[#d4af37] transition-all group">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-xl shrink-0">
-                        🌿
+                        ðŸŒ¿
                       </div>
                       <div>
                         <h4 className="font-bold text-white text-base group-hover:text-[#f7e092] transition-colors">Bhringraj (King of Herbs)</h4>
@@ -1094,7 +1075,7 @@ export default function Home() {
                   <div className="bg-[#0b2912]/60 backdrop-blur-md border border-[#d4af37]/30 p-5 rounded-2xl hover:border-[#d4af37] transition-all group">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-xl shrink-0">
-                        🍃
+                        ðŸƒ
                       </div>
                       <div>
                         <h4 className="font-bold text-white text-base group-hover:text-[#f7e092] transition-colors">Neem Leaf Extract</h4>
@@ -1110,7 +1091,7 @@ export default function Home() {
                   <div className="sm:col-span-2 bg-[#0b2912]/60 backdrop-blur-md border border-[#d4af37]/30 p-5 rounded-2xl hover:border-[#d4af37] transition-all group">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="w-10 h-10 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 flex items-center justify-center text-xl shrink-0">
-                        🌰
+                        ðŸŒ°
                       </div>
                       <div>
                         <h4 className="font-bold text-white text-base group-hover:text-[#f7e092] transition-colors">Cold-Pressed Almond & Sesame Carrier Base</h4>
@@ -1232,7 +1213,7 @@ export default function Home() {
                             </span>
                           )}
                         </h4>
-                        <span className="text-xs text-gray-500">{rev.city}, Pakistan • {rev.date}</span>
+                        <span className="text-xs text-gray-500">{rev.city}, Pakistan â€¢ {rev.date}</span>
                       </div>
                     </div>
                     <div className="flex text-amber-400">
@@ -1280,7 +1261,7 @@ export default function Home() {
               <details key={i} className="bg-white border border-[#e7e1d5] rounded-xl p-5 group [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex items-center justify-between cursor-pointer font-bold text-gray-900 text-base">
                   <span>{faq.q}</span>
-                  <span className="text-[#0b2912] group-open:rotate-180 transition-transform">▼</span>
+                  <span className="text-[#0b2912] group-open:rotate-180 transition-transform">â–¼</span>
                 </summary>
                 <p className="mt-3 text-sm text-gray-600 leading-relaxed font-normal pt-2 border-t border-gray-100">
                   {faq.a}
@@ -1327,9 +1308,9 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px]">
-              <span className="bg-[#0b2912] border border-[#d4af37]/40 px-2.5 py-1 rounded-full text-[#f7e092] font-semibold">🌿 100% Organic</span>
-              <span className="bg-[#0b2912] border border-[#d4af37]/40 px-2.5 py-1 rounded-full text-[#f7e092] font-semibold">🇵🇰 Pakistan COD</span>
-              <span className="bg-[#0b2912] border border-[#d4af37]/40 px-2.5 py-1 rounded-full text-[#f7e092] font-semibold">🛡️ 7-Day Guarantee</span>
+              <span className="bg-[#0b2912] border border-[#d4af37]/40 px-2.5 py-1 rounded-full text-[#f7e092] font-semibold">ðŸŒ¿ 100% Organic</span>
+              <span className="bg-[#0b2912] border border-[#d4af37]/40 px-2.5 py-1 rounded-full text-[#f7e092] font-semibold">ðŸ‡µðŸ‡° Pakistan COD</span>
+              <span className="bg-[#0b2912] border border-[#d4af37]/40 px-2.5 py-1 rounded-full text-[#f7e092] font-semibold">ðŸ›¡ï¸ 7-Day Guarantee</span>
             </div>
           </div>
 
@@ -1363,7 +1344,7 @@ export default function Home() {
                 <span>WhatsApp: +92 328 7657890</span>
               </a>
               <p className="text-gray-300"><strong>Email:</strong> support@elizagold.pk</p>
-              <p className="text-gray-300"><strong>Operating Hours:</strong> Mon – Sat (9:00 AM – 9:00 PM PKT)</p>
+              <p className="text-gray-300"><strong>Operating Hours:</strong> Mon â€“ Sat (9:00 AM â€“ 9:00 PM PKT)</p>
               <p className="text-gray-400 text-[11px] pt-1">Dispatch Hubs: Lahore, Karachi, & Islamabad</p>
             </div>
           </div>
@@ -1391,14 +1372,14 @@ export default function Home() {
 
         {/* Bottom Copyright & Legal Links */}
         <div className="max-w-7xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400 relative z-10">
-          <p>© {new Date().getFullYear()} Eliza Gold Pakistan. All rights reserved.</p>
+          <p>Â© {new Date().getFullYear()} Eliza Gold Pakistan. All rights reserved.</p>
           <div className="flex items-center gap-4 text-gray-400 text-[11px]">
             <Link href="/privacy-policy" className="hover:text-[#d4af37] transition-colors">Privacy Policy</Link>
-            <span>•</span>
+            <span>â€¢</span>
             <Link href="/terms-of-service" className="hover:text-[#d4af37] transition-colors">Terms of Service</Link>
-            <span>•</span>
+            <span>â€¢</span>
             <Link href="/return-policy" className="hover:text-[#d4af37] transition-colors">Return Policy</Link>
-            <span>•</span>
+            <span>â€¢</span>
             <Link href="/shipping-policy" className="hover:text-[#d4af37] transition-colors">Shipping Policy</Link>
           </div>
         </div>
@@ -1481,17 +1462,6 @@ export default function Home() {
                           <div className="font-bold text-[#0b2912] text-sm mt-1">Rs. {cartItems[0].price.toLocaleString()}</div>
                         </div>
                       </div>
-
-                      {/* Qty controller */}
-                      <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
-                        <button type="button" onClick={() => updateCartQty(-1)} className="p-1.5 text-gray-600 hover:text-black">
-                          <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="w-7 text-center font-bold text-xs">{cartItems[0].quantity}</span>
-                        <button type="button" onClick={() => updateCartQty(1)} className="p-1.5 text-gray-600 hover:text-black">
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
                     </div>
 
                     {/* COUPON CODE FORM */}
@@ -1535,7 +1505,7 @@ export default function Home() {
                             placeholder="e.g. Mohammad Ali"
                             className="w-full px-3.5 py-2.5 text-sm border-2 border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-[#0b2912] focus:ring-2 focus:ring-[#0b2912]/20 transition-all font-medium"
                           />
-                          {errors.fullName && <span className="text-xs text-red-600 font-bold mt-1 block">⚠ Full name is required</span>}
+                          {errors.fullName && <span className="text-xs text-red-600 font-bold mt-1 block">âš  Full name is required</span>}
                         </div>
 
                         <div>
@@ -1554,7 +1524,7 @@ export default function Home() {
                             placeholder="03001234567"
                             className="w-full px-3.5 py-2.5 text-sm border-2 border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-[#0b2912] focus:ring-2 focus:ring-[#0b2912]/20 transition-all font-medium"
                           />
-                          {errors.phone && <span className="text-xs text-red-600 font-bold mt-1 block">⚠ {String(errors.phone.message || "Valid phone number required")}</span>}
+                          {errors.phone && <span className="text-xs text-red-600 font-bold mt-1 block">âš  {String(errors.phone.message || "Valid phone number required")}</span>}
                         </div>
 
                         <div>
@@ -1568,7 +1538,7 @@ export default function Home() {
                             <option value="">Select your city...</option>
                             {PAKISTAN_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
-                          {errors.city && <span className="text-xs text-red-600 font-bold mt-1 block">⚠ City is required</span>}
+                          {errors.city && <span className="text-xs text-red-600 font-bold mt-1 block">âš  City is required</span>}
                         </div>
 
 
@@ -1583,7 +1553,7 @@ export default function Home() {
                               placeholder="e.g., Mirpur Khas"
                               className="w-full px-3.5 py-2.5 text-sm border-2 border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-[#0b2912] focus:ring-2 focus:ring-[#0b2912]/20 transition-all font-medium"
                             />
-                            {errors.otherCityName && <span className="text-xs text-red-600 font-bold mt-1 block">⚠️ {String(errors.otherCityName.message)}</span>}
+                            {errors.otherCityName && <span className="text-xs text-red-600 font-bold mt-1 block">âš ï¸ {String(errors.otherCityName.message)}</span>}
                           </div>
                         )}
                         <div>
@@ -1596,7 +1566,7 @@ export default function Home() {
                             placeholder="House / Flat No., Street, Sector or Area Name"
                             className="w-full px-3.5 py-2.5 text-sm border-2 border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-[#0b2912] focus:ring-2 focus:ring-[#0b2912]/20 transition-all resize-none font-medium"
                           />
-                          {errors.address && <span className="text-xs text-red-600 font-bold mt-1 block">⚠ Address is required</span>}
+                          {errors.address && <span className="text-xs text-red-600 font-bold mt-1 block">âš  Address is required</span>}
                         </div>
                       </div>
                     </div>
@@ -1642,7 +1612,7 @@ export default function Home() {
                         <span>Processing Order...</span>
                       ) : (
                         <>
-                          <span>Complete Order — Rs. {grandTotal.toLocaleString()}</span>
+                          <span>Complete Order â€” Rs. {grandTotal.toLocaleString()}</span>
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
@@ -1775,9 +1745,9 @@ export default function Home() {
                     {...registerReview("rating")}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-[#0b2912]"
                   >
-                    <option value="5">★★★★★ 5 Stars (Excellent)</option>
-                    <option value="4">★★★★☆ 4 Stars (Good)</option>
-                    <option value="3">★★★☆☆ 3 Stars (Average)</option>
+                    <option value="5">â˜…â˜…â˜…â˜…â˜… 5 Stars (Excellent)</option>
+                    <option value="4">â˜…â˜…â˜…â˜…â˜† 4 Stars (Good)</option>
+                    <option value="3">â˜…â˜…â˜…â˜†â˜† 3 Stars (Average)</option>
                   </select>
                 </div>
 
@@ -1861,7 +1831,7 @@ export default function Home() {
             className="fixed bottom-20 sm:bottom-6 left-4 z-30 bg-white border-2 border-[#d4af37]/40 p-3.5 rounded-2xl shadow-2xl max-w-xs hidden sm:flex items-center gap-3"
           >
             <div className="w-10 h-10 rounded-full bg-[#0b2912] text-[#d4af37] flex items-center justify-center font-bold text-xs shrink-0">
-              🛍️
+              ðŸ›ï¸
             </div>
             <div className="text-xs">
               <p className="font-bold text-gray-900 leading-tight">
@@ -1871,7 +1841,7 @@ export default function Home() {
                 Ordered {SOCIAL_PROOF_TOASTS[activeToastIndex].item}
               </p>
               <span className="text-[9px] text-gray-400 font-medium block mt-0.5">
-                Verified Purchase • {SOCIAL_PROOF_TOASTS[activeToastIndex].time}
+                Verified Purchase â€¢ {SOCIAL_PROOF_TOASTS[activeToastIndex].time}
               </span>
             </div>
           </motion.div>
