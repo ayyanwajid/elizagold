@@ -82,7 +82,7 @@ interface AdminReview {
   verified: boolean;
 }
 
-// ── DATE HELPERS ──────────────────────────────────────────────────────────
+// â”€â”€ DATE HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function parseOrderDate(dateStr: string): Date {
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
   const prevOrderCountRef = useRef(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Store Settings State — loaded from Convex (source of truth for every
+  // Store Settings State â€” loaded from Convex (source of truth for every
   // visitor), edited locally as a draft, persisted via updateSettings.
   const [productPrices, setProductPrices] = useState({ bottle1: 1499, bottle2: 2699, bottle3: 3699 });
   const [announcementText, setAnnouncementText] = useState("FLASH SALE: 40% OFF + FREE CASH ON DELIVERY ACROSS PAKISTAN");
@@ -260,8 +260,8 @@ export default function AdminDashboard() {
   const [newCouponDiscount, setNewCouponDiscount] = useState("");
   const [newCouponValue, setNewCouponValue] = useState("");
 
-  // ── CONVEX LIVE SUBSCRIPTIONS ──────────────────────────────────────────
-  // "skip" until we hold a verified session token — the query itself
+  // â”€â”€ CONVEX LIVE SUBSCRIPTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // "skip" until we hold a verified session token â€” the query itself
   // rejects unauthenticated calls server-side, but there's no reason to
   // even attempt it before login.
   const convexOrders = useQuery(api.orders.listOrders, adminToken ? { token: adminToken } : "skip");
@@ -280,7 +280,7 @@ export default function AdminDashboard() {
   const deleteCouponMutation = useMutation(api.coupons.deleteCoupon);
   const convexClient = useConvex();
 
-  // Seed the local draft fields from Convex once settings load — only once,
+  // Seed the local draft fields from Convex once settings load â€” only once,
   // so a live-query refresh (e.g. right after this admin's own save) doesn't
   // clobber an in-progress edit on another field.
   useEffect(() => {
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
     }
   }, [convexSettings]);
 
-  // ── AUTH & INITIAL LOAD ────────────────────────────────────────────────
+  // â”€â”€ AUTH & INITIAL LOAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const savedToken = localStorage.getItem("eliza_admin_token");
     if (savedToken) setAdminToken(savedToken);
@@ -312,7 +312,7 @@ export default function AdminDashboard() {
     } catch { setOrders(SAMPLE_ORDERS); }
   }, []);
 
-  // ── SYNC CONVEX ORDERS LIVE ────────────────────────────────────────────
+  // â”€â”€ SYNC CONVEX ORDERS LIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!convexOrders || !Array.isArray(convexOrders) || convexOrders.length === 0) return;
     const formatted: AdminOrder[] = convexOrders.map((o: any) => ({
@@ -333,7 +333,7 @@ export default function AdminDashboard() {
     setOrders(formatted);
   }, [convexOrders, isAuthenticated]);
 
-  // ── SYNC CONVEX REVIEWS LIVE ───────────────────────────────────────────
+  // â”€â”€ SYNC CONVEX REVIEWS LIVE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (convexReviews && Array.isArray(convexReviews)) {
       setReviews(convexReviews.map((r: any) => ({
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
     }
   }, [convexReviews]);
 
-  // ── HANDLERS ──────────────────────────────────────────────────────────
+  // â”€â”€ HANDLERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (lockoutUntil && Date.now() < lockoutUntil) return;
@@ -400,7 +400,7 @@ export default function AdminDashboard() {
     if (!adminToken) return;
     setSyncingOrderId(order.orderId);
     try {
-      await convexClient.action(api.googleSheets.exportOrderToSheet as any, {
+      await convexClient.action((api as any).googleSheets.exportOrderToSheet, {
         token: adminToken,
         order: {
           orderId: order.orderId,
@@ -411,7 +411,7 @@ export default function AdminDashboard() {
           date: order.date,
         },
       });
-      alert("✅ Order synced to Google Sheets!");
+      alert("âœ… Order synced to Google Sheets!");
     } catch (error: any) {
       alert("Failed to sync: " + (error.message || "Unknown error"));
     } finally {
@@ -433,7 +433,7 @@ export default function AdminDashboard() {
   };
 
   // All settings live in one Convex document, so both "Save Prices" and
-  // "Save Settings" persist the full current draft — whichever tab the
+  // "Save Settings" persist the full current draft â€” whichever tab the
   // admin is on, nothing else in the draft gets reverted.
   const persistSettings = useCallback(async () => {
     if (!adminToken) return false;
@@ -454,7 +454,7 @@ export default function AdminDashboard() {
 
   const saveProductPrices = async () => {
     const ok = await persistSettings();
-    alert(ok ? "Prices saved — every visitor will now see the updated prices." : "Could not save prices. Please try again.");
+    alert(ok ? "Prices saved â€” every visitor will now see the updated prices." : "Could not save prices. Please try again.");
   };
 
   const saveSettings = async () => {
@@ -467,7 +467,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // ── METRICS ───────────────────────────────────────────────────────────
+  // â”€â”€ METRICS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const deliveredRevenue = orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + (o.total || 0), 0);
   const pendingCount = orders.filter(o => o.status === "Pending").length;
@@ -541,7 +541,7 @@ export default function AdminDashboard() {
     setSelectedOrders(new Set());
   };
 
-  // ── LOGIN SCREEN ───────────────────────────────────────────────────────
+  // â”€â”€ LOGIN SCREEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (!isAuthenticated) {
     const isLockedOut = !!lockoutUntil && Date.now() < lockoutUntil;
     return (
@@ -574,7 +574,7 @@ export default function AdminDashboard() {
                 <p className="text-xs text-[#e29184] mt-2 font-medium">Incorrect passcode. Please try again.</p>
               )}
               {isLockedOut && (
-                <p className="text-xs text-[#e29184] mt-2 font-medium">Too many attempts — try again in a minute.</p>
+                <p className="text-xs text-[#e29184] mt-2 font-medium">Too many attempts â€” try again in a minute.</p>
               )}
             </div>
             <button
@@ -593,13 +593,13 @@ export default function AdminDashboard() {
               )}
             </button>
           </form>
-          <Link href="/" className="inline-flex items-center gap-1 text-xs text-[#c9a227] hover:underline pt-1">← Return to Storefront</Link>
+          <Link href="/" className="inline-flex items-center gap-1 text-xs text-[#c9a227] hover:underline pt-1">â† Return to Storefront</Link>
         </div>
       </div>
     );
   }
 
-  // ── MAIN DASHBOARD ─────────────────────────────────────────────────────
+  // â”€â”€ MAIN DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <SessionBoundary onExpire={handleSessionExpired}>
     <div className="min-h-screen bg-[#faf8f5] text-[#1c1917] flex flex-col font-sans">
@@ -615,8 +615,8 @@ export default function AdminDashboard() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm text-[#dab53a] uppercase tracking-wide">New Order Received</p>
-              <p className="text-xs font-bold mt-1">{newOrderAlert.customer.fullName} — {newOrderAlert.customer.city}</p>
-              <p className="text-xs text-gray-300">{newOrderAlert.items?.[0]?.bundleTitle} · Rs. {newOrderAlert.total?.toLocaleString()}</p>
+              <p className="text-xs font-bold mt-1">{newOrderAlert.customer.fullName} â€” {newOrderAlert.customer.city}</p>
+              <p className="text-xs text-gray-300">{newOrderAlert.items?.[0]?.bundleTitle} Â· Rs. {newOrderAlert.total?.toLocaleString()}</p>
               <p className="text-[10px] text-gray-400 font-mono mt-0.5">{newOrderAlert.orderId}</p>
             </div>
             <button onClick={() => setNewOrderAlert(null)} className="text-gray-400 hover:text-white shrink-0">
@@ -724,7 +724,7 @@ export default function AdminDashboard() {
         {/* MAIN CONTENT */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
 
-          {/* ═══ TAB 1: OVERVIEW ═══════════════════════════════════════════ */}
+          {/* â•â•â• TAB 1: OVERVIEW â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {activeTab === "overview" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -834,7 +834,7 @@ export default function AdminDashboard() {
               <div className="bg-white rounded-2xl border border-[#e7e1d5] p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-gray-900 text-sm">Recent Orders</h3>
-                  <button onClick={() => setActiveTab("orders")} className="text-xs text-[#0b2912] font-bold hover:underline">View All →</button>
+                  <button onClick={() => setActiveTab("orders")} className="text-xs text-[#0b2912] font-bold hover:underline">View All â†’</button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse min-w-[500px]">
@@ -869,9 +869,10 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ TAB 2: ORDERS ══════════════════════════════════════════════ */}
+          {/* â•â•â• TAB 2: ORDERS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {activeTab === "orders" && (
-            <div className="space-y-5">
+            <div className="space-y-4">
+              {/* â”€â”€ Header â”€â”€ */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="font-serif text-2xl font-bold text-gray-900">Orders Manager</h2>
@@ -883,7 +884,48 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              {/* Search & Filter */}
+              {/* â”€â”€ Today's Summary Banner â”€â”€ */}
+              <div className="bg-gradient-to-r from-[#0b2912] to-[#154620] rounded-2xl p-4 flex flex-wrap items-center gap-6 text-white shadow-lg">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-[#a9812e]" />
+                  <span className="font-bold text-sm">Today</span>
+                </div>
+                <div className="flex gap-6 text-center">
+                  <div>
+                    <p className="text-2xl font-extrabold">{todayOrders.length}</p>
+                    <p className="text-[10px] text-white/60 uppercase font-bold">New Orders</p>
+                  </div>
+                  <div className="w-px bg-white/20" />
+                  <div>
+                    <p className="text-2xl font-extrabold">Rs. {todayRevenue.toLocaleString()}</p>
+                    <p className="text-[10px] text-white/60 uppercase font-bold">Revenue</p>
+                  </div>
+                  <div className="w-px bg-white/20" />
+                  <div>
+                    <p className="text-2xl font-extrabold text-amber-300">{todayPendingDispatch}</p>
+                    <p className="text-[10px] text-white/60 uppercase font-bold">Pending Dispatch</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* â”€â”€ Date Range Pills â”€â”€ */}
+              <div className="flex flex-wrap gap-2">
+                {([["TODAY","Today"],["YESTERDAY","Yesterday"],["7DAYS","Last 7 Days"],["MONTH","This Month"],["ALL","All Time"]] as const).map(([val, label]) => (
+                  <button
+                    key={val}
+                    onClick={() => { setDateRange(val); setCurrentPage(1); setSelectedOrders(new Set()); }}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-full border transition-all ${
+                      dateRange === val
+                        ? "bg-[#0b2912] text-white border-[#0b2912] shadow-md"
+                        : "bg-white text-gray-600 border-gray-300 hover:border-[#0b2912] hover:text-[#0b2912]"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* â”€â”€ Search & Filter Bar â”€â”€ */}
               <div className="bg-white p-4 rounded-2xl border border-[#e7e1d5] flex flex-col sm:flex-row items-center gap-3 shadow-sm">
                 <div className="relative w-full sm:flex-1">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
@@ -913,149 +955,191 @@ export default function AdminDashboard() {
                 <span className="text-xs text-gray-400 font-medium shrink-0">{filteredOrders.length} orders</span>
               </div>
 
-              {/* Orders Table */}
+              {/* â”€â”€ Bulk Actions Bar â”€â”€ */}
+              <AnimatePresence>
+                {selectedOrders.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                    className="bg-[#0b2912] text-white p-3 rounded-xl flex flex-wrap items-center gap-3 shadow-lg"
+                  >
+                    <span className="text-xs font-bold">{selectedOrders.size} order{selectedOrders.size > 1 ? "s" : ""} selected</span>
+                    <div className="flex gap-2 flex-wrap">
+                      <button onClick={() => bulkUpdateStatus("Processing")} className="px-3 py-1.5 text-[11px] font-bold bg-purple-500 rounded-lg hover:bg-purple-600 transition-colors">Mark Processing</button>
+                      <button onClick={() => bulkUpdateStatus("Dispatched")} className="px-3 py-1.5 text-[11px] font-bold bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors">Mark Dispatched</button>
+                      <button onClick={() => bulkUpdateStatus("Delivered")} className="px-3 py-1.5 text-[11px] font-bold bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors">Mark Delivered</button>
+                      <button onClick={() => bulkUpdateStatus("Cancelled")} className="px-3 py-1.5 text-[11px] font-bold bg-red-500 rounded-lg hover:bg-red-600 transition-colors">Cancel</button>
+                    </div>
+                    <button onClick={() => setSelectedOrders(new Set())} className="ml-auto text-xs text-white/60 hover:text-white">Clear</button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* â”€â”€ Orders Table with Date Groups â”€â”€ */}
               <div className="bg-white rounded-2xl border border-[#e7e1d5] overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+                  <table className="w-full text-left text-xs border-collapse min-w-[850px]">
                     <thead>
                       <tr className="bg-[#0b2912] text-white font-bold uppercase tracking-wider">
+                        <th className="py-3.5 px-3 w-10">
+                          <button onClick={toggleSelectAll} className="text-white/70 hover:text-white">
+                            {allCurrentSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                          </button>
+                        </th>
                         <th className="py-3.5 px-4">Order ID</th>
                         <th className="py-3.5 px-4">Customer</th>
                         <th className="py-3.5 px-4">City</th>
                         <th className="py-3.5 px-4">Package</th>
                         <th className="py-3.5 px-4">Total</th>
-                        <th className="py-3.5 px-4">Date</th>
                         <th className="py-3.5 px-4">Status & Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {currentOrders.map(o => {
-                        const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG.Pending;
-                        const isExpanded = expandedOrderId === o.orderId;
-                        return (
-                          <React.Fragment key={o.orderId}>
-                            <tr className="hover:bg-amber-50/40 transition-colors">
-                              <td className="py-3.5 px-4">
-                                <div className="font-bold text-[#0b2912]">{o.orderId}</div>
-                                <button onClick={() => setExpandedOrderId(isExpanded ? null : o.orderId)} className="text-[10px] text-gray-400 hover:text-gray-700 flex items-center gap-0.5 mt-0.5">
-                                  {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                  {isExpanded ? "Hide" : "Details"}
-                                </button>
-                              </td>
-                              <td className="py-3.5 px-4">
-                                <p className="font-bold text-gray-900 flex items-center gap-1.5">
-                                  {o.customer.fullName}
-                                  <button onClick={() => handleCopy(o.customer.fullName, `name-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912]" title="Copy Name">
-                                    {copiedId === `name-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                  </button>
-                                </p>
-                                <div className="text-[11px] text-blue-600 flex items-center gap-1 mt-0.5 hover:underline">
-                                  <a href={`tel:${o.customer.phone}`}><Phone className="w-3 h-3" />{o.customer.phone}</a>
-                                  <button onClick={() => handleCopy(o.customer.phone, `phone-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912]" title="Copy Phone">
-                                    {copiedId === `phone-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                  </button>
-                                </div>
-                              </td>
-                              <td className="py-3.5 px-4 font-semibold text-gray-700">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="w-3 h-3 text-gray-400" />{o.customer.city}
-                                </div>
-                              </td>
-                              <td className="py-3.5 px-4">
-                                <span className="font-medium text-gray-800">{o.items?.[0]?.bundleTitle || "Roghan-e-Azam"}</span>
-                              </td>
-                              <td className="py-3.5 px-4 font-extrabold text-gray-900">Rs. {o.total?.toLocaleString()}</td>
-                              <td className="py-3.5 px-4 text-gray-500">
-                                <div className="flex items-center gap-1"><Clock className="w-3 h-3" />{o.date}</div>
-                              </td>
-                              <td className="py-3.5 px-4">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <select
-                                    value={o.status || "Pending"}
-                                    onChange={e => updateOrderStatus(o.orderId, e.target.value, o._id)}
-                                    className={`px-2.5 py-1.5 text-xs rounded-lg font-bold outline-none border transition-colors cursor-pointer ${sc.bg} ${sc.text} ${sc.border}`}
-                                  >
-                                    <option value="Pending">Pending</option>
-                                    <option value="Processing">Processing</option>
-                                    <option value="Dispatched">Dispatched</option>
-                                    <option value="Delivered">Delivered</option>
-                                    <option value="Cancelled">Cancelled</option>
-                                  </select>
-                                  <a
-                                    href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=Assalam%20o%20Alaikum%20${encodeURIComponent(o.customer.fullName)}!%20Aapka%20Eliza%20Gold%20ka%20order%20${o.orderId}%20abhi%20*${o.status}*%20hai.%20Shukriya!%20%F0%9F%8C%BF`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="p-1.5 bg-[#25D366] text-white rounded-lg hover:brightness-110 transition-all inline-flex items-center justify-center shadow-sm"
-                                    title="WhatsApp Customer"
-                                  >
-                                    <MessageCircle className="w-3.5 h-3.5" />
-                                  </a>
-                                  <button
-                                    onClick={() => setSelectedPrintOrder(o)}
-                                    className="p-1.5 bg-[#0b2912] text-[#a9812e] rounded-lg hover:bg-black transition-all inline-flex items-center justify-center shadow-sm"
-                                    title="Print Courier Slip"
-                                  >
-                                    <Printer className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleExportToSheets(o)}
-                                    disabled={syncingOrderId === o.orderId}
-                                    className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all inline-flex items-center justify-center shadow-sm disabled:opacity-50"
-                                    title="Push to Google Sheets"
-                                  >
-                                    {syncingOrderId === o.orderId ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
-                                  </button>
-                                  <button onClick={() => setEditingOrder(o)} className="p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all inline-flex items-center justify-center shadow-sm" title="Edit Order">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                  </button>
-                                  <button onClick={() => setDeleteConfirmOrderId(o.orderId)} className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all inline-flex items-center justify-center shadow-sm" title="Delete Order">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                            {/* Expanded Row */}
-                            {isExpanded && (
-                              <tr className="bg-amber-50/60">
-                                <td colSpan={7} className="px-6 py-4">
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                                    <div>
-                                      <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Full Address</span>
-                                      <p className="font-semibold text-gray-800 flex items-start gap-1.5">
-                                        {o.customer.address}
-                                        <button onClick={() => handleCopy(o.customer.address, `address-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912] mt-0.5 shrink-0" title="Copy Address">
-                                          {copiedId === `address-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                                        </button>
-                                      </p>
-                                      <p className="text-gray-600">{o.customer.city}</p>
+                      {dateGroups.map(group => (
+                        <React.Fragment key={group.dateKey}>
+                          {/* â”€â”€ Date Group Header â”€â”€ */}
+                          <tr className="bg-[#faf8f5]">
+                            <td colSpan={7} className="py-2.5 px-4">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-3.5 h-3.5 text-[#a9812e]" />
+                                <span className="font-bold text-sm text-[#0b2912]">{group.label}</span>
+                                <span className="text-[10px] font-bold bg-[#0b2912]/10 text-[#0b2912] px-2 py-0.5 rounded-full">{group.orders.length} order{group.orders.length !== 1 ? "s" : ""}</span>
+                              </div>
+                            </td>
+                          </tr>
+                          {/* â”€â”€ Orders in this date group â”€â”€ */}
+                          {group.orders.map(o => {
+                            const sc = STATUS_CONFIG[o.status] || STATUS_CONFIG.Pending;
+                            const isExpanded = expandedOrderId === o.orderId;
+                            const isSelected = selectedOrders.has(o.orderId);
+                            const isPending = o.status === "Pending";
+                            return (
+                              <React.Fragment key={o.orderId}>
+                                <tr className={`transition-colors ${isPending ? "bg-amber-50/70 hover:bg-amber-50" : "hover:bg-gray-50/60"} ${isSelected ? "!bg-blue-50" : ""}`}>
+                                  <td className="py-3.5 px-3">
+                                    <button onClick={() => toggleSelectOne(o.orderId)} className="text-gray-400 hover:text-[#0b2912]">
+                                      {isSelected ? <CheckSquare className="w-4 h-4 text-[#0b2912]" /> : <Square className="w-4 h-4" />}
+                                    </button>
+                                  </td>
+                                  <td className="py-3.5 px-4">
+                                    <div className="font-bold text-[#0b2912]">{o.orderId}</div>
+                                    <button onClick={() => setExpandedOrderId(isExpanded ? null : o.orderId)} className="text-[10px] text-gray-400 hover:text-gray-700 flex items-center gap-0.5 mt-0.5">
+                                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                      {isExpanded ? "Hide" : "Details"}
+                                    </button>
+                                  </td>
+                                  <td className="py-3.5 px-4">
+                                    <p className="font-bold text-gray-900 flex items-center gap-1.5">
+                                      {o.customer.fullName}
+                                      <button onClick={() => handleCopy(o.customer.fullName, `name-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912]" title="Copy Name">
+                                        {copiedId === `name-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                      </button>
+                                    </p>
+                                    <div className="text-[11px] text-blue-600 flex items-center gap-1 mt-0.5 hover:underline">
+                                      <a href={`tel:${o.customer.phone}`}><Phone className="w-3 h-3" />{o.customer.phone}</a>
+                                      <button onClick={() => handleCopy(o.customer.phone, `phone-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912]" title="Copy Phone">
+                                        {copiedId === `phone-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                      </button>
                                     </div>
-                                    <div>
-                                      <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Items Ordered</span>
-                                      {o.items?.map((item, i) => (
-                                        <p key={i} className="font-semibold text-gray-800">{item.bundleTitle} × {item.quantity} — Rs. {item.price?.toLocaleString()}</p>
-                                      ))}
+                                  </td>
+                                  <td className="py-3.5 px-4 font-semibold text-gray-700">
+                                    <div className="flex items-center gap-1">
+                                      <MapPin className="w-3 h-3 text-gray-400" />{o.customer.city}
                                     </div>
-                                    <div>
-                                      <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Payment</span>
-                                      <p className="font-extrabold text-lg text-[#0b2912]">Rs. {o.total?.toLocaleString()}</p>
-                                      <span className="bg-orange-100 text-orange-800 text-[10px] font-bold px-2 py-0.5 rounded">Cash On Delivery</span>
+                                  </td>
+                                  <td className="py-3.5 px-4">
+                                    <span className="font-medium text-gray-800">{o.items?.[0]?.bundleTitle || "Roghan-e-Azam"}</span>
+                                  </td>
+                                  <td className="py-3.5 px-4 font-extrabold text-gray-900">Rs. {o.total?.toLocaleString()}</td>
+                                  <td className="py-3.5 px-4">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <select
+                                        value={o.status || "Pending"}
+                                        onChange={e => updateOrderStatus(o.orderId, e.target.value, o._id)}
+                                        className={`px-2.5 py-1.5 text-xs rounded-lg font-bold outline-none border transition-colors cursor-pointer ${sc.bg} ${sc.text} ${sc.border}`}
+                                      >
+                                        <option value="Pending">Pending</option>
+                                        <option value="Processing">Processing</option>
+                                        <option value="Dispatched">Dispatched</option>
+                                        <option value="Delivered">Delivered</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                      </select>
+                                      <a
+                                        href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=Assalam%20o%20Alaikum%20${encodeURIComponent(o.customer.fullName)}!%20Aapka%20Eliza%20Gold%20ka%20order%20${o.orderId}%20abhi%20*${o.status}*%20hai.%20Shukriya!%20%F0%9F%8C%BF`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-1.5 bg-[#25D366] text-white rounded-lg hover:brightness-110 transition-all inline-flex items-center justify-center shadow-sm"
+                                        title="WhatsApp Customer"
+                                      >
+                                        <MessageCircle className="w-3.5 h-3.5" />
+                                      </a>
+                                      <button
+                                        onClick={() => setSelectedPrintOrder(o)}
+                                        className="p-1.5 bg-[#0b2912] text-[#a9812e] rounded-lg hover:bg-black transition-all inline-flex items-center justify-center shadow-sm"
+                                        title="Print Courier Slip"
+                                      >
+                                        <Printer className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={() => handleExportToSheets(o)}
+                                        disabled={syncingOrderId === o.orderId}
+                                        className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all inline-flex items-center justify-center shadow-sm disabled:opacity-50"
+                                        title="Push to Google Sheets"
+                                      >
+                                        {syncingOrderId === o.orderId ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileSpreadsheet className="w-3.5 h-3.5" />}
+                                      </button>
+                                      <button onClick={() => setEditingOrder(o)} className="p-1.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all inline-flex items-center justify-center shadow-sm" title="Edit Order">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                      </button>
+                                      <button onClick={() => setDeleteConfirmOrderId(o.orderId)} className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all inline-flex items-center justify-center shadow-sm" title="Delete Order">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                      </button>
                                     </div>
-                                  </div>
-                                  {o.adminNotes && (
-                                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                      <span className="font-bold text-yellow-800 uppercase text-[10px] flex items-center gap-1 mb-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                        Admin Note
-                                      </span>
-                                      <p className="text-xs text-yellow-900 font-medium whitespace-pre-wrap">{o.adminNotes}</p>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
+                                  </td>
+                                </tr>
+                                {/* Expanded Row */}
+                                {isExpanded && (
+                                  <tr className="bg-amber-50/60">
+                                    <td colSpan={7} className="px-6 py-4">
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                                        <div>
+                                          <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Full Address</span>
+                                          <p className="font-semibold text-gray-800 flex items-start gap-1.5">
+                                            {o.customer.address}
+                                            <button onClick={() => handleCopy(o.customer.address, `address-${o.orderId}`)} className="text-gray-400 hover:text-[#0b2912] mt-0.5 shrink-0" title="Copy Address">
+                                              {copiedId === `address-${o.orderId}` ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                            </button>
+                                          </p>
+                                          <p className="text-gray-600">{o.customer.city}</p>
+                                        </div>
+                                        <div>
+                                          <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Items Ordered</span>
+                                          {o.items?.map((item, i) => (
+                                            <p key={i} className="font-semibold text-gray-800">{item.bundleTitle} Ã— {item.quantity} â€” Rs. {item.price?.toLocaleString()}</p>
+                                          ))}
+                                        </div>
+                                        <div>
+                                          <span className="font-bold text-gray-500 uppercase text-[10px] block mb-1">Payment</span>
+                                          <p className="font-extrabold text-lg text-[#0b2912]">Rs. {o.total?.toLocaleString()}</p>
+                                          <span className="bg-orange-100 text-orange-800 text-[10px] font-bold px-2 py-0.5 rounded">Cash On Delivery</span>
+                                        </div>
+                                      </div>
+                                      {o.adminNotes && (
+                                        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                          <span className="font-bold text-yellow-800 uppercase text-[10px] flex items-center gap-1 mb-1">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                            Admin Note
+                                          </span>
+                                          <p className="text-xs text-yellow-900 font-medium whitespace-pre-wrap">{o.adminNotes}</p>
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </React.Fragment>
+                      ))}
                       {filteredOrders.length === 0 && (
                         <tr>
                           <td colSpan={7} className="py-12 text-center text-gray-400">
@@ -1067,33 +1151,56 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-                {totalPages > 1 && (
-                  <div className="p-4 border-t border-[#e7e1d5] flex items-center justify-between bg-gray-50">
-                    <span className="text-xs text-gray-500">
-                      Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} orders
-                    </span>
-                    <div className="flex gap-2">
-                      <button 
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="px-3 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                {/* â”€â”€ Improved Pagination â”€â”€ */}
+                {totalPages >= 1 && (
+                  <div className="p-4 border-t border-[#e7e1d5] flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500">
+                        Showing {filteredOrders.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1}â€“{Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length}
+                      </span>
+                      <select
+                        value={itemsPerPage}
+                        onChange={e => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                        className="text-xs border border-gray-300 rounded-lg px-2 py-1 bg-white font-bold text-gray-700 outline-none"
                       >
-                        Previous
-                      </button>
-                      <button 
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
+                        <option value={20}>20/page</option>
+                        <option value={50}>50/page</option>
+                        <option value={100}>100/page</option>
+                      </select>
                     </div>
+                    {totalPages > 1 && (
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1.5 text-gray-600 hover:bg-gray-200 rounded-lg disabled:opacity-30">
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                          let page: number;
+                          if (totalPages <= 7) { page = i + 1; }
+                          else if (currentPage <= 4) { page = i + 1; }
+                          else if (currentPage >= totalPages - 3) { page = totalPages - 6 + i; }
+                          else { page = currentPage - 3 + i; }
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-8 h-8 text-xs font-bold rounded-lg transition-colors ${
+                                currentPage === page ? "bg-[#0b2912] text-white shadow-md" : "text-gray-600 hover:bg-gray-200"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        })}
+                        <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-1.5 text-gray-600 hover:bg-gray-200 rounded-lg disabled:opacity-30">
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             </div>
           )}
-
           
               {/* EDIT ORDER MODAL */}
               <AnimatePresence>
@@ -1188,7 +1295,7 @@ export default function AdminDashboard() {
                 )}
               </AnimatePresence>
 
-          {/* ═══ TAB 3: REVIEWS ════════════════════════════════════════════ */}
+          {/* â•â•â• TAB 3: REVIEWS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {activeTab === "reviews" && (
             <div className="space-y-5">
               <div>
@@ -1247,17 +1354,17 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ TAB 4: PRODUCTS & PRICING ══════════════════════════════════ */}
+          {/* â•â•â• TAB 4: PRODUCTS & PRICING â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {activeTab === "products" && (
             <div className="space-y-6">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-gray-900">Product Bundles & Pricing</h2>
-                <p className="text-xs text-gray-500">Update bundle prices — changes sync to storefront on save</p>
+                <p className="text-xs text-gray-500">Update bundle prices â€” changes sync to storefront on save</p>
               </div>
 
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-2 text-xs text-emerald-800">
                 <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>Prices are stored centrally — once saved, every visitor sees the new price immediately, on any device.</span>
+                <span>Prices are stored centrally â€” once saved, every visitor sees the new price immediately, on any device.</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1288,8 +1395,8 @@ export default function AdminDashboard() {
 
               <div className="bg-white p-4 rounded-2xl border border-[#e7e1d5] flex items-center justify-between">
                 <div className="text-xs text-gray-600">
-                  <span className="font-bold">1 Bottle:</span> Rs. {productPrices.bottle1.toLocaleString()} &nbsp;·&nbsp;
-                  <span className="font-bold">2 Bottles:</span> Rs. {productPrices.bottle2.toLocaleString()} &nbsp;·&nbsp;
+                  <span className="font-bold">1 Bottle:</span> Rs. {productPrices.bottle1.toLocaleString()} &nbsp;Â·&nbsp;
+                  <span className="font-bold">2 Bottles:</span> Rs. {productPrices.bottle2.toLocaleString()} &nbsp;Â·&nbsp;
                   <span className="font-bold">3 Bottles:</span> Rs. {productPrices.bottle3.toLocaleString()}
                 </div>
                 <button onClick={saveProductPrices} className="bg-[#0b2912] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-[#154620] transition-colors">
@@ -1299,12 +1406,12 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ TAB 5: COUPONS ════════════════════════════════════════════ */}
+          {/* â•â•â• TAB 5: COUPONS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {activeTab === "coupons" && (
             <div className="space-y-6">
               <div>
                 <h2 className="font-serif text-2xl font-bold text-gray-900">Coupon & Discount Manager</h2>
-                <p className="text-xs text-gray-500">Create & activate promo codes — changes apply at checkout for every customer, instantly</p>
+                <p className="text-xs text-gray-500">Create & activate promo codes â€” changes apply at checkout for every customer, instantly</p>
               </div>
 
               {/* Create Coupon */}
@@ -1364,7 +1471,7 @@ export default function AdminDashboard() {
                       <tr key={c._id} className="hover:bg-gray-50">
                         <td className="py-3.5 px-4 font-black text-[#0b2912] font-mono tracking-wider">{c.code}</td>
                         <td className="py-3.5 px-4 font-semibold">{c.discount}</td>
-                        <td className="py-3.5 px-4 font-semibold">{c.discountValue || "—"}%</td>
+                        <td className="py-3.5 px-4 font-semibold">{c.discountValue || "â€”"}%</td>
                         <td className="py-3.5 px-4">
                           <button onClick={() => adminToken && toggleCouponMutation({ token: adminToken, id: c._id, active: !c.active }).catch(() => alert("Could not update coupon."))}>
                             {c.active
@@ -1384,7 +1491,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* ═══ TAB 6: STORE SETTINGS ══════════════════════════════════════ */}
+          {/* â•â•â• TAB 6: STORE SETTINGS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
           {activeTab === "settings" && (
             <div className="space-y-6">
               <div>
@@ -1428,7 +1535,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-700">Free Delivery Site-Wide</label>
-                    <p className="text-[10px] text-gray-400 mt-0.5">When on, every order ships free regardless of bundle — useful for promotions.</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">When on, every order ships free regardless of bundle â€” useful for promotions.</p>
                   </div>
                   <button
                     type="button"
@@ -1451,7 +1558,7 @@ export default function AdminDashboard() {
                     className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl font-bold focus:border-[#0b2912] outline-none disabled:opacity-50 disabled:bg-gray-50"
                   />
                   <p className="text-[10px] text-gray-400 mt-1">
-                    Charged only on the 1-Bottle Starter Pack — 2 &amp; 3-Bottle packs always ship free.
+                    Charged only on the 1-Bottle Starter Pack â€” 2 &amp; 3-Bottle packs always ship free.
                     {freeDeliverySiteWide && " Currently ignored because free delivery is on, site-wide."}
                   </p>
                 </div>
@@ -1490,7 +1597,7 @@ export default function AdminDashboard() {
         </main>
       </div>
 
-      {/* ═══ PRINT COURIER SLIP MODAL ════════════════════════════════════════ */}
+      {/* â•â•â• PRINT COURIER SLIP MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
       {selectedPrintOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white max-w-sm w-full rounded-2xl p-6 space-y-4 border-2 border-black shadow-2xl font-sans text-black">
