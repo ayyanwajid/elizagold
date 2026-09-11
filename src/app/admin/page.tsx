@@ -204,7 +204,7 @@ export default function AdminDashboard() {
   const addCouponMutation = useMutation(api.coupons.addCoupon);
   const toggleCouponMutation = useMutation(api.coupons.toggleCoupon);
   const deleteCouponMutation = useMutation(api.coupons.deleteCoupon);
-  const exportOrderToSheetAction = useAction((api as any).googleSheets?.exportOrderToSheet);
+  const exportOrderToSheetAction = useAction("googleSheets:exportOrderToSheet" as any);
 
   // Seed the local draft fields from Convex once settings load — only once,
   // so a live-query refresh (e.g. right after this admin's own save) doesn't
