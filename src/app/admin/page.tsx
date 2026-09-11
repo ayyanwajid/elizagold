@@ -45,7 +45,7 @@ import {
   FileSpreadsheet
 } from "lucide-react";
 
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery, useMutation, useConvex } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
 type TabType = "overview" | "orders" | "reviews" | "products" | "coupons" | "settings";
@@ -204,7 +204,7 @@ export default function AdminDashboard() {
   const addCouponMutation = useMutation(api.coupons.addCoupon);
   const toggleCouponMutation = useMutation(api.coupons.toggleCoupon);
   const deleteCouponMutation = useMutation(api.coupons.deleteCoupon);
-  const exportOrderToSheetAction = useAction("googleSheets:exportOrderToSheet" as any);
+  const convexClient = useConvex();
 
   // Seed the local draft fields from Convex once settings load — only once,
   // so a live-query refresh (e.g. right after this admin's own save) doesn't
@@ -326,9 +326,18 @@ export default function AdminDashboard() {
     if (!adminToken) return;
     setSyncingOrderId(order.orderId);
     try {
-      if (!exportOrderToSheetAction) throw new Error("Google Sheets sync is still initializing or disabled.");
-      await exportOrderToSheetAction({ token: adminToken, order: order as any });
-      alert("Order successfully synced to Google Sheets!");
+      await convexClient.action(api.googleSheets.exportOrderToSheet as any, {
+        token: adminToken,
+        order: {
+          orderId: order.orderId,
+          customer: order.customer,
+          items: order.items.map(i => ({ name: i.name, bundleTitle: i.bundleTitle, price: i.price, quantity: i.quantity })),
+          total: order.total,
+          status: order.status,
+          date: order.date,
+        },
+      });
+      alert("✅ Order synced to Google Sheets!");
     } catch (error: any) {
       alert("Failed to sync: " + (error.message || "Unknown error"));
     } finally {
