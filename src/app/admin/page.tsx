@@ -42,7 +42,12 @@ import {
   Loader2,
   Copy,
   Check,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Calendar,
+  CheckSquare,
+  Square,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 import { useQuery, useMutation, useConvex } from "convex/react";
@@ -77,25 +82,92 @@ interface AdminReview {
   verified: boolean;
 }
 
+// ── DATE HELPERS ──────────────────────────────────────────────────────────
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function parseOrderDate(dateStr: string): Date {
+  // Handles "28 Jul 2026", "11 Sep 2026", ISO strings, etc.
+  if (!dateStr) return new Date(0);
+  const parts = dateStr.match(/(\d{1,2})\s+(\w{3})\s+(\d{4})/);
+  if (parts) {
+    const day = parseInt(parts[1]);
+    const monthIdx = MONTHS.indexOf(parts[2]);
+    const year = parseInt(parts[3]);
+    if (monthIdx >= 0) return new Date(year, monthIdx, day);
+  }
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+}
+
+function getDateKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getDateLabel(dateKey: string): string {
+  const today = new Date();
+  const todayKey = getDateKey(today);
+  const yest = new Date(today); yest.setDate(yest.getDate() - 1);
+  const yestKey = getDateKey(yest);
+  if (dateKey === todayKey) return "Today";
+  if (dateKey === yestKey) return "Yesterday";
+  const [y,m,d] = dateKey.split("-").map(Number);
+  return `${d} ${MONTHS[m-1]} ${y}`;
+}
+
+function isInDateRange(orderDate: Date, range: string): boolean {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch (range) {
+    case "TODAY": return orderDate >= startOfToday;
+    case "YESTERDAY": {
+      const startYest = new Date(startOfToday); startYest.setDate(startYest.getDate() - 1);
+      return orderDate >= startYest && orderDate < startOfToday;
+    }
+    case "7DAYS": {
+      const start7 = new Date(startOfToday); start7.setDate(start7.getDate() - 7);
+      return orderDate >= start7;
+    }
+    case "MONTH": {
+      const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return orderDate >= startMonth;
+    }
+    default: return true; // ALL
+  }
+}
+
+type DateGroup = { dateKey: string; label: string; orders: AdminOrder[] };
+
+function groupOrdersByDate(orders: AdminOrder[]): DateGroup[] {
+  const map = new Map<string, AdminOrder[]>();
+  for (const o of orders) {
+    const key = getDateKey(parseOrderDate(o.date));
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(o);
+  }
+  // Sort date keys descending (newest first)
+  const sortedKeys = Array.from(map.keys()).sort((a, b) => b.localeCompare(a));
+  return sortedKeys.map(key => ({ dateKey: key, label: getDateLabel(key), orders: map.get(key)! }));
+}
+
 // Sample seed orders for first load
 const SAMPLE_ORDERS: AdminOrder[] = [
   {
     orderId: "EG-94821",
     customer: { fullName: "Mohammad Hamza", phone: "03001234567", city: "Lahore", address: "House 45, Street 12, DHA Phase 5" },
     items: [{ name: "Roghan-e-Azam Misali Hair Oil", bundleTitle: "2 Bottles (Popular Pack)", price: 2699, quantity: 1 }],
-    total: 2699, date: "28 Jul 2026", status: "Processing"
+    total: 2699, date: "28 Jul 2026", status: "Pending"
   },
   {
     orderId: "EG-94820",
     customer: { fullName: "Saba Tariq", phone: "03219876543", city: "Karachi", address: "Flat 4B, Silver Heights, Clifton Block 2" },
     items: [{ name: "Roghan-e-Azam Misali Hair Oil", bundleTitle: "3 Bottles (Family Pack)", price: 3699, quantity: 1 }],
-    total: 3699, date: "28 Jul 2026", status: "Dispatched"
+    total: 3699, date: "28 Jul 2026", status: "Pending"
   },
   {
     orderId: "EG-94819",
     customer: { fullName: "Usman Raza", phone: "03451122334", city: "Islamabad", address: "House 102, Street 7, Sector F-8/3" },
     items: [{ name: "Roghan-e-Azam Misali Hair Oil", bundleTitle: "1 Bottle (Starter Pack)", price: 1499, quantity: 1 }],
-    total: 1499, date: "27 Jul 2026", status: "Delivered"
+    total: 1499, date: "27 Jul 2026", status: "Pending"
   }
 ];
 
@@ -155,9 +227,11 @@ export default function AdminDashboard() {
   // Enhancements state
   const [sortOrder, setSortOrder] = useState<"NEWEST" | "OLDEST">("NEWEST");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [syncingOrderId, setSyncingOrderId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<"TODAY" | "YESTERDAY" | "7DAYS" | "MONTH" | "ALL">("ALL");
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -422,7 +496,8 @@ export default function AdminDashboard() {
       o.customer.phone.includes(q) ||
       o.customer.city.toLowerCase().includes(q);
     const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchDate = dateRange === "ALL" || isInDateRange(parseOrderDate(o.date), dateRange);
+    return matchSearch && matchStatus && matchDate;
   });
 
   if (sortOrder === "OLDEST") {
@@ -431,6 +506,40 @@ export default function AdminDashboard() {
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const currentOrders = filteredOrders.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const dateGroups = groupOrdersByDate(currentOrders);
+
+  // Today's summary stats
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayOrders = orders.filter(o => parseOrderDate(o.date) >= todayStart);
+  const todayRevenue = todayOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const todayPendingDispatch = todayOrders.filter(o => o.status === "Pending" || o.status === "Processing").length;
+
+  // Bulk action helpers
+  const allCurrentSelected = currentOrders.length > 0 && currentOrders.every(o => selectedOrders.has(o.orderId));
+  const toggleSelectAll = () => {
+    if (allCurrentSelected) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(currentOrders.map(o => o.orderId)));
+    }
+  };
+  const toggleSelectOne = (orderId: string) => {
+    const next = new Set(selectedOrders);
+    if (next.has(orderId)) next.delete(orderId); else next.add(orderId);
+    setSelectedOrders(next);
+  };
+  const bulkUpdateStatus = async (newStatus: string) => {
+    const toUpdate = orders.filter(o => selectedOrders.has(o.orderId));
+    const updated = orders.map(o => selectedOrders.has(o.orderId) ? { ...o, status: newStatus } : o);
+    setOrders(updated);
+    localStorage.setItem("eliza_orders_list", JSON.stringify(updated));
+    for (const o of toUpdate) {
+      if (o._id && adminToken) {
+        try { await updateOrderStatusMutation({ token: adminToken, id: o._id as any, status: newStatus }); } catch { /* continue */ }
+      }
+    }
+    setSelectedOrders(new Set());
+  };
 
   // ── LOGIN SCREEN ───────────────────────────────────────────────────────
   if (!isAuthenticated) {
