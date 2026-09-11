@@ -1074,7 +1074,11 @@ function AdminDashboardContent({ adminToken, setAdminToken }: { adminToken: stri
                                         <option value="Cancelled">Cancelled</option>
                                       </select>
                                       <a
-                                        href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=Assalam%20o%20Alaikum%20${encodeURIComponent(o.customer.fullName)}!%20Aapka%20Eliza%20Gold%20ka%20order%20${o.orderId}%20abhi%20*${o.status}*%20hai.%20Shukriya!%20%F0%9F%8C%BF`}
+                                        href={`https://wa.me/${o.customer.phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(
+                                          o.status === "Pending"
+                                            ? `Assalam o Alaikum ${o.customer.fullName}! Thank you for your order ${o.orderId} at Eliza Gold.\n\nPlease reply with *YES* to confirm your order so we can dispatch it via Cash on Delivery (Rs. ${o.total?.toLocaleString()}).\n\nShukriya! 🌿`
+                                            : `Assalam o Alaikum ${o.customer.fullName}! Aapka Eliza Gold ka order ${o.orderId} abhi *${o.status}* hai. Shukriya! 🌿`
+                                        )}`}
                                         target="_blank"
                                         rel="noreferrer"
                                         className="p-1.5 bg-[#25D366] text-white rounded-lg hover:brightness-110 transition-all inline-flex items-center justify-center shadow-sm"
