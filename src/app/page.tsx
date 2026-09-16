@@ -275,8 +275,8 @@ export default function Home() {
 
   // Track ViewContent on landing page load
   useEffect(() => {
-    trackViewContent("Eliza Gold Roghan-e-Azam Misali Hair Oil", selectedBundle.price || 999);
-  }, []);
+    trackViewContent("Eliza Gold Roghan-e-Azam Misali Hair Oil", selectedBundle?.price || 999);
+  }, [selectedBundle?.price]);
 
   // Cart helper functions
   const handleAddToCart = () => {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Comprehensive tracking helper for Meta Pixel & Google Analytics (GA4)
 
 declare global {
