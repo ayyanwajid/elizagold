@@ -32,6 +32,13 @@ import {
 
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import {
+  trackViewContent,
+  trackAddToCart,
+  trackInitiateCheckout,
+  trackPurchase,
+  trackWhatsAppContact
+} from "@/lib/tracking";
 
 // --- TYPES & DATA ---
 interface CartItem {
@@ -266,6 +273,11 @@ export default function Home() {
   // Lenis removed â€” it was adding ~25KB JS weight with no perceivable benefit
 
 
+  // Track ViewContent on landing page load
+  useEffect(() => {
+    trackViewContent("Eliza Gold Roghan-e-Azam Misali Hair Oil", selectedBundle.price || 999);
+  }, []);
+
   // Cart helper functions
   const handleAddToCart = () => {
     const newItem: CartItem = {
@@ -279,6 +291,10 @@ export default function Home() {
     };
     setCartItems([newItem]); // Single product shop or replace
     setIsDrawerOpen(true);
+
+    // Track Meta & Google Analytics AddToCart & InitiateCheckout
+    trackAddToCart(selectedBundle.title, selectedBundle.price, quantity);
+    trackInitiateCheckout(selectedBundle.price * quantity, quantity);
   };
 
   const handleBuyNow = () => {
@@ -380,6 +396,14 @@ export default function Home() {
     } catch (err) {
       console.log("Convex cloud order save offline fallback:", err);
     }
+
+    // Track verified Purchase to Meta Pixel & Google Analytics (only on successful order)
+    trackPurchase({
+      orderId: orderDetails.orderId,
+      total: orderDetails.total,
+      items: orderDetails.items,
+      customer: orderDetails.customer,
+    });
 
     setOrderConfirmed(orderDetails);
     setCartItems([]);
@@ -1622,6 +1646,7 @@ export default function Home() {
                       href={`https://wa.me/${toWaNumber(whatsappNumber || "03001234567")}?text=Hi%20Eliza%20Gold,%20I%20want%20to%20order%20${encodeURIComponent(cartItems[0]?.bundleTitle || "Roghan-e-Azam Hair Oil")}`}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => trackWhatsAppContact(grandTotal)}
                       className="w-full mt-2.5 bg-[#25D366] text-white py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#1ebd59] transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >
                       <MessageCircle className="w-4 h-4" /> Fast Order via WhatsApp
@@ -1788,6 +1813,7 @@ export default function Home() {
         href={`https://wa.me/${toWaNumber(whatsappNumber)}`}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackWhatsAppContact(selectedBundle.price)}
         className="fixed bottom-[4.5rem] sm:bottom-6 right-4 sm:right-6 z-50 bg-[#25D366] text-white p-3.5 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center gap-2 font-bold text-xs"
       >
         <MessageCircle className="w-5 h-5" />

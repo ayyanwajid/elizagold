@@ -48,6 +48,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://eliza.pk",
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
 };
 
 export const viewport: Viewport = {
@@ -97,6 +100,24 @@ fbq('track', 'PageView');
             alt=""
           />
         </noscript>
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body className="antialiased bg-background text-foreground selection:bg-gold-300 selection:text-black" suppressHydrationWarning>
         <ConvexClientProvider>{children}</ConvexClientProvider>
