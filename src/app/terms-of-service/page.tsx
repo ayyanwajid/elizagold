@@ -6,6 +6,14 @@ import { Scale, ArrowLeft, CheckCircle2, ShieldAlert, Truck } from "lucide-react
 export const metadata = {
   title: "Terms of Service | Eliza Gold Pakistan",
   description: "Terms and conditions of service for Eliza Gold Pakistan. Read order terms, Cash on Delivery policy, and store policies.",
+  alternates: {
+    canonical: "https://eliza.pk/terms-of-service",
+  },
+  openGraph: {
+    title: "Terms of Service | Eliza Gold Pakistan",
+    description: "Official Terms of Service for Eliza Gold Pakistan Cash on Delivery orders and deliveries.",
+    url: "https://eliza.pk/terms-of-service",
+  },
 };
 
 export default function TermsOfServicePage() {

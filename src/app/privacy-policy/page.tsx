@@ -6,6 +6,14 @@ import { ShieldCheck, ArrowLeft, Lock, Eye, FileText, CheckCircle2 } from "lucid
 export const metadata = {
   title: "Privacy Policy | Eliza Gold Pakistan",
   description: "Privacy policy for Eliza Gold Pakistan. Learn how we collect, protect, and handle your personal data when ordering hair oil online.",
+  alternates: {
+    canonical: "https://eliza.pk/privacy-policy",
+  },
+  openGraph: {
+    title: "Privacy Policy | Eliza Gold Pakistan",
+    description: "Official Privacy Policy for Eliza Gold Pakistan. Safe and protected Cash on Delivery order processing.",
+    url: "https://eliza.pk/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

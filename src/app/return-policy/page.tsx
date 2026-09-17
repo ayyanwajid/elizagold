@@ -6,6 +6,14 @@ import { RotateCcw, ArrowLeft, CheckCircle2, ShieldCheck, Truck, MessageCircle }
 export const metadata = {
   title: "Return & Refund Policy | Eliza Gold Pakistan",
   description: "7-Day Money Back Guarantee and Return Policy for Eliza Gold Pakistan. Hassle-free returns and refunds across Pakistan.",
+  alternates: {
+    canonical: "https://eliza.pk/return-policy",
+  },
+  openGraph: {
+    title: "Return & Refund Policy | Eliza Gold Pakistan",
+    description: "7-Day Money Back Guarantee and Return Policy for Eliza Gold Pakistan. Hassle-free returns and replacements across Pakistan.",
+    url: "https://eliza.pk/return-policy",
+  },
 };
 
 export default function ReturnPolicyPage() {

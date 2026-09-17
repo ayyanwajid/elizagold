@@ -6,6 +6,14 @@ import { Truck, ArrowLeft, Clock, MapPin, ShieldCheck } from "lucide-react";
 export const metadata = {
   title: "Shipping & Delivery Policy | Eliza Gold Pakistan",
   description: "Shipping details for Eliza Gold Pakistan. Free Express Cash on Delivery (COD) in 2-3 days across all cities in Pakistan.",
+  alternates: {
+    canonical: "https://eliza.pk/shipping-policy",
+  },
+  openGraph: {
+    title: "Shipping & Delivery Policy | Eliza Gold Pakistan",
+    description: "Express Cash on Delivery (COD) across Pakistan in 2-3 days from Lahore, Karachi, and Islamabad hubs.",
+    url: "https://eliza.pk/shipping-policy",
+  },
 };
 
 export default function ShippingPolicyPage() {

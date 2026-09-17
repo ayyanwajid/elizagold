@@ -23,27 +23,46 @@ export const metadata: Metadata = {
   description: "Buy original Eliza Gold Roghan-e-Azam Misali herbal hair oil online. Natural treatment for hair growth, hair fall, and stronger hair in Pakistan.",
   keywords: "Eliza Gold, Roghan-e-Azam Misali, Hair Oil, Natural Hair Oil, Pakistan Hair Care, Herbal Hair Oil, Best hair oil for hair growth and hair fall in Pakistan, Buy original Eliza Gold hair oil online, Roghan-e-Azam Misali price in Pakistan, Natural treatment for hair growth",
   authors: [{ name: "Eliza Gold" }],
+  icons: {
+    icon: [
+      { url: "/icon.jpg" },
+      { url: "/assets/logo-icon.webp", type: "image/webp" },
+    ],
+    apple: "/icon.jpg",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "Eliza Gold Roghan-e-Azam Misali Hair Oil",
-    description: "Premium Herbal Hair Oil for Stronger & Healthier Looking Hair. Buy online in Pakistan.",
+    title: "Eliza Gold Roghan-e-Azam Misali Hair Oil | Premium Hair Care Pakistan",
+    description: "Buy original Eliza Gold Roghan-e-Azam Misali herbal hair oil online. Natural treatment for hair growth, hair fall, and stronger hair in Pakistan.",
     url: "https://eliza.pk",
-    siteName: "Eliza Gold",
+    siteName: "Eliza Gold Pakistan",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "https://eliza.pk/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Eliza Gold Roghan-e-Azam Misali Herbal Hair Oil Bottle",
+        type: "image/jpeg",
       },
     ],
-    locale: "en_US",
+    locale: "en_PK",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Eliza Gold Roghan-e-Azam Misali Hair Oil",
-    description: "Premium Herbal Hair Oil for Stronger & Healthier Looking Hair. Buy online in Pakistan.",
-    images: ["/og-image.jpg"],
+    title: "Eliza Gold Roghan-e-Azam Misali Hair Oil | Premium Hair Care Pakistan",
+    description: "Buy original Eliza Gold Roghan-e-Azam Misali herbal hair oil online with 100% Cash On Delivery across Pakistan.",
+    images: ["https://eliza.pk/og-image.jpg"],
   },
   alternates: {
     canonical: "https://eliza.pk",
@@ -68,6 +87,36 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
+        {/* Organization Schema for Google Knowledge Graph */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Eliza Gold Pakistan",
+              "url": "https://eliza.pk",
+              "logo": "https://eliza.pk/assets/logo-icon.webp",
+              "image": "https://eliza.pk/og-image.jpg",
+              "description": "Pakistan's premier 100% organic Ayurvedic hair care brand. Empowering natural hair growth & scalp repair.",
+              "email": "support@elizagold.pk",
+              "telephone": "+923287657890",
+              "contactPoint": [
+                {
+                  "@type": "ContactPoint",
+                  "telephone": "+923287657890",
+                  "contactType": "customer service",
+                  "areaServed": "PK",
+                  "availableLanguage": ["en", "ur"]
+                }
+              ],
+              "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "PK"
+              }
+            })
+          }}
+        />
         {/* Critical resource hints — shave off DNS/TCP time for external origins */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
