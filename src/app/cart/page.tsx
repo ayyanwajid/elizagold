@@ -333,7 +333,7 @@ export default function CartPage() {
                       type="text"
                       value={inputCoupon}
                       onChange={(e) => setInputCoupon(e.target.value)}
-                      placeholder="Coupon (e.g. SAVE10)"
+                      placeholder="Promo / Coupon Code"
                       className="w-full pl-8 pr-3 py-2 text-xs border border-gray-300 rounded-xl focus:outline-none focus:border-[#0b2912]"
                     />
                   </div>

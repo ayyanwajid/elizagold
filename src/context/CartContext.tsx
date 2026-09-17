@@ -83,13 +83,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = "eliza_cart_items_v3";
 const COUPON_STORAGE_KEY = "eliza_active_coupon_v3";
 
-const FALLBACK_COUPONS: Record<string, number> = {
-  SAVE10: 10,
-  ELIZA10: 10,
-  GOLD15: 15,
-  SPECIAL20: 20,
-};
-
 interface CouponDoc {
   _id: string;
   code: string;
@@ -249,7 +242,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const applyCoupon = (code: string) => {
     const cleanCode = code.trim().toUpperCase();
 
-    // 1. Check Convex live coupons from admin
+    // Check Convex live coupons from admin
     const liveCoupons = (couponsQuery ?? []).filter((c) => c.active);
     const matchedLive = liveCoupons.find((c) => c.code.toUpperCase() === cleanCode);
     if (matchedLive) {
@@ -267,25 +260,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return { success: true, message: `Coupon "${cleanCode}" applied! (${pct}% OFF)` };
     }
 
-    // 2. Check fallback coupons
-    if (FALLBACK_COUPONS[cleanCode]) {
-      const pct = FALLBACK_COUPONS[cleanCode];
-      setCouponCode(cleanCode);
-      setDiscountPercent(pct);
-      try {
-        localStorage.setItem(
-          COUPON_STORAGE_KEY,
-          JSON.stringify({ code: cleanCode, percent: pct })
-        );
-      } catch {
-        // ignore
-      }
-      return { success: true, message: `Coupon "${cleanCode}" applied! (${pct}% OFF)` };
-    }
-
     return {
       success: false,
-      message: `Invalid coupon code. Try ${Object.keys(FALLBACK_COUPONS).join(", ")}`,
+      message: "Invalid or expired promo code.",
     };
   };
 

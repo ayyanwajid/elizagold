@@ -24,7 +24,6 @@ import {
   RotateCcw,
   Award,
   Check,
-  Flame,
   XCircle,
   Ban,
   Zap,
@@ -213,20 +212,6 @@ export default function Home() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewsList, setReviewsList] = useState(REVIEWS_DATA);
 
-  // Live Countdown Timer State (Urgency Boost)
-  const [timeLeft, setTimeLeft] = useState({ hours: 4, minutes: 28, seconds: 45 });
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        return { hours: 4, minutes: 28, seconds: 45 };
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   // Sticky Mobile Order Bar State
   const [showStickyBar, setShowStickyBar] = useState(false);
   useEffect(() => {
@@ -240,25 +225,6 @@ export default function Home() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Social Proof Order Toast Notifications State
-  const [activeToastIndex, setActiveToastIndex] = useState(0);
-  const [showToast, setShowToast] = useState(false);
-  const SOCIAL_PROOF_TOASTS = [
-    { name: "Fatima S.", city: "Lahore", item: "2 Bottles (Popular Pack)", time: "3 mins ago" },
-    { name: "Usman K.", city: "Karachi", item: "3 Bottles (Family Pack)", time: "7 mins ago" },
-    { name: "Zainab B.", city: "Islamabad", item: "2 Bottles (Popular Pack)", time: "12 mins ago" },
-    { name: "Ayesha M.", city: "Rawalpindi", item: "1 Bottle (Starter Pack)", time: "15 mins ago" }
-  ];
-
-  useEffect(() => {
-    const toastInterval = setInterval(() => {
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 4500);
-      setActiveToastIndex(prev => (prev + 1) % SOCIAL_PROOF_TOASTS.length);
-    }, 11000);
-    return () => clearInterval(toastInterval);
-  }, [SOCIAL_PROOF_TOASTS.length]);
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
   const selectedCity = watch("city");
@@ -333,7 +299,7 @@ export default function Home() {
       setDiscountApplied(true);
       setDiscountPercent(matchedCoupon.discountValue || 10);
     } else {
-      alert(`Invalid coupon code. Available codes: ${activeCoupons.map(c => c.code).join(", ")}`);
+      alert("Invalid or expired promo code.");
     }
   };
 
@@ -517,7 +483,7 @@ export default function Home() {
               "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": "4.9",
-                "reviewCount": "128"
+                "reviewCount": String(reviewsList.length)
               }
             },
             {
@@ -586,15 +552,10 @@ export default function Home() {
         }}
       />
 
-      
-      {/* ANNOUNCEMENT BAR WITH LIVE COUNTDOWN TIMER */}
+      {/* ANNOUNCEMENT BAR */}
       <div className="bg-[#0b2912] text-white text-xs py-2.5 px-4 text-center tracking-widest uppercase font-semibold flex flex-wrap items-center justify-center gap-2 border-b border-[#d4af37]/20">
-        <Flame className="w-4 h-4 text-[#d4af37] animate-pulse" />
+        <Sparkles className="w-4 h-4 text-[#d4af37] animate-pulse" />
         <span>{announcementText}</span>
-        <span className="bg-[#d4af37] text-[#0b2912] font-black px-2.5 py-0.5 rounded text-[11px] font-mono tracking-tight shadow-inner">
-          ENDS IN {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
-        </span>
-        <span className="hidden md:inline text-[#d4af37] font-bold">| USE CODE: {activeCoupons[0]?.code || "ELIZA10"} FOR EXTRA {activeCoupons[0]?.discountValue || 10}% OFF</span>
       </div>
 
 
@@ -757,13 +718,13 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Stock Urgency Banner */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-amber-900 font-medium">
-                  <Flame className="w-4 h-4 text-amber-600 animate-bounce" />
-                  <span>High Demand: <b>14 items left</b> in stock today</span>
+              {/* Product Trust & Quality Badge */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-emerald-900 font-medium">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Fresh Batch: <b>100% Pure Organic Extracts</b> • Quality Inspected</span>
                 </div>
-                <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded">FAST SELLING</span>
+                <span className="text-[10px] bg-emerald-200/80 text-emerald-900 font-bold px-2 py-0.5 rounded">ORIGINAL</span>
               </div>
 
               {/* BUNDLE SELECTION CARDS */}
@@ -890,8 +851,8 @@ export default function Home() {
                 },
                 {
                   icon: <Zap className="w-6 h-6 text-amber-500" />,
-                  title: "Proven 14-Day Hair Fall Control",
-                  subtitle: "Cleanses roots & stops shedding"
+                  title: "Nourishing Hair Fall Control",
+                  subtitle: "Cleanses roots & visibly reduces shedding"
                 },
                 {
                   icon: <Sparkles className="w-6 h-6 text-[#d4af37]" />,
@@ -1019,8 +980,8 @@ export default function Home() {
                         <Zap className="w-5 h-5 text-amber-600" />
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 text-sm">Proven 14-Day Hair Fall Control</p>
-                        <p className="text-[11px] text-gray-500 font-normal">Cleanses roots & stops shedding</p>
+                        <p className="font-bold text-gray-900 text-sm">Nourishing Hair Fall Control</p>
+                        <p className="text-[11px] text-gray-500 font-normal">Cleanses roots & visibly reduces shedding</p>
                       </div>
                     </td>
                     <td className="py-5 px-6 text-center bg-[#0b2912] text-white border-x-2 border-[#d4af37] shadow-sm">
@@ -1616,7 +1577,7 @@ export default function Home() {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Coupon Code (e.g. ELIZA10)"
+                        placeholder="Promo / Coupon Code"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
                         className="flex-1 px-3 py-2 text-xs border border-gray-300 rounded-lg bg-white uppercase font-bold outline-none focus:border-[#0b2912]"
@@ -1967,33 +1928,6 @@ export default function Home() {
               <ShoppingBag className="w-3.5 h-3.5 text-[#041207]" />
               <span>Order Now</span>
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* REAL-TIME SOCIAL PROOF ORDER TOAST */}
-      <AnimatePresence>
-        {showToast && (
-          <motion.div
-            initial={{ x: -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -100, opacity: 0 }}
-            className="fixed bottom-20 sm:bottom-6 left-4 z-30 bg-white border-2 border-[#d4af37]/40 p-3.5 rounded-2xl shadow-2xl max-w-xs hidden sm:flex items-center gap-3"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#0b2912] text-[#d4af37] flex items-center justify-center font-bold text-xs shrink-0">
-              <ShoppingBag className="w-5 h-5 text-[#d4af37]" />
-            </div>
-            <div className="text-xs">
-              <p className="font-bold text-gray-900 leading-tight">
-                {SOCIAL_PROOF_TOASTS[activeToastIndex].name} <span className="font-normal text-gray-500">from {SOCIAL_PROOF_TOASTS[activeToastIndex].city}</span>
-              </p>
-              <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                Ordered {SOCIAL_PROOF_TOASTS[activeToastIndex].item}
-              </p>
-              <span className="text-[9px] text-gray-400 font-medium block mt-0.5">
-                Verified Purchase • {SOCIAL_PROOF_TOASTS[activeToastIndex].time}
-              </span>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
