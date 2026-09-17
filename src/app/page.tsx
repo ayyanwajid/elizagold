@@ -6,8 +6,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm, FieldValues } from "react-hook-form";
+import { useCart } from "@/context/CartContext";
 import {
   X,
   ArrowRight,
@@ -15,8 +17,6 @@ import {
   ShieldCheck,
   Sparkles,
   MessageCircle,
-  Plus,
-  Minus,
   Leaf,
   Star,
   ShoppingBag,
@@ -38,9 +38,6 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import {
   trackViewContent,
-  trackAddToCart,
-  trackInitiateCheckout,
-  trackPurchase,
   trackWhatsAppContact
 } from "@/lib/tracking";
 
@@ -175,17 +172,23 @@ export default function Home() {
   const activeCoupons = useMemo(() => (couponsQuery ?? []).filter((c) => c.active), [couponsQuery]);
 
   const bundleOptions = useMemo(() => {
-    if (!settingsQuery) return BASE_BUNDLE_OPTIONS;
+    if (!settingsQuery?.productPrices) return BASE_BUNDLE_OPTIONS;
     const prices = settingsQuery.productPrices;
-    return BASE_BUNDLE_OPTIONS.map((b, i) => ({
-      ...b,
-      price: i === 0 ? prices.bottle1 : i === 1 ? prices.bottle2 : prices.bottle3
-    }));
-  }, [settingsQuery]);
+    return BASE_BUNDLE_OPTIONS.map((b, i) => {
+      const price = i === 0 ? (prices.bottle1 || b.price) : i === 1 ? (prices.bottle2 || b.price) : (prices.bottle3 || b.price);
+      const savingsVal = Math.max(0, b.originalPrice - price);
+      const freeDelivText = (freeDeliverySiteWide || b.bottles >= 2) ? " + FREE Delivery" : "";
+      return {
+        ...b,
+        price,
+        savings: `Save Rs. ${savingsVal.toLocaleString()}${freeDelivText}`,
+      };
+    });
+  }, [settingsQuery, freeDeliverySiteWide]);
 
   const [selectedBundleId, setSelectedBundleId] = useState(BASE_BUNDLE_OPTIONS[1].id);
   const selectedBundle = bundleOptions.find((b) => b.id === selectedBundleId) ?? bundleOptions[1];
-  const [quantity, setQuantity] = useState(1);
+  const [quantity] = useState(1);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [couponCode, setCouponCode] = useState("");
@@ -277,34 +280,31 @@ export default function Home() {
   // Lenis removed — it was adding ~25KB JS weight with no perceivable benefit
 
 
-  // Track ViewContent on landing page load
+  // Track ViewContent on landing page load & bundle selection
   useEffect(() => {
-    trackViewContent("Eliza Gold Roghan-e-Azam Misali Hair Oil", selectedBundle?.price || 999);
-  }, [selectedBundle?.price]);
+    trackViewContent(
+      selectedBundle?.title || "Eliza Gold Roghan-e-Azam Misali Hair Oil",
+      selectedBundle?.price || 1499,
+      selectedBundle?.bottles || 1,
+      selectedBundle?.id
+    );
+  }, [selectedBundle?.price, selectedBundle?.id, selectedBundle?.title, selectedBundle?.bottles]);
 
-  // Cart helper functions
+  const router = useRouter();
+  const cart = useCart();
+
+  // Cart & Funnel routing helpers
   const handleAddToCart = () => {
-    const newItem: CartItem = {
-      id: `${selectedBundle.id}-${Date.now()}`,
-      name: `Roghan-e-Azam Misali Hair Oil`,
-      bundleTitle: selectedBundle.title,
-      quantity: quantity,
-      price: selectedBundle.price,
-      originalPrice: selectedBundle.originalPrice,
-      image: galleryImages[0]
-    };
-    setCartItems([newItem]); // Single product shop or replace
-    setIsDrawerOpen(true);
-
-    // Track Meta & Google Analytics AddToCart & InitiateCheckout
-    trackAddToCart(selectedBundle.title, selectedBundle.price, quantity);
-    trackInitiateCheckout(selectedBundle.price * quantity, quantity);
+    cart.addToCart(selectedBundle, quantity);
+    router.push("/cart");
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
+    cart.addToCart(selectedBundle, quantity);
+    router.push("/checkout");
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const updateCartQty = (delta: number) => {
     if (cartItems.length === 0) return;
     const updated = cartItems.map(item => {
@@ -401,16 +401,15 @@ export default function Home() {
       console.log("Convex cloud order save offline fallback:", err);
     }
 
-    // Track verified Purchase to Meta Pixel & Google Analytics (only on successful order)
-    trackPurchase({
-      orderId: orderDetails.orderId,
-      total: orderDetails.total,
-      items: orderDetails.items,
-      customer: orderDetails.customer,
-    });
+    // Save to sessionStorage and navigate to dedicated confirmation page
+    try {
+      sessionStorage.setItem("eliza_last_order", JSON.stringify(orderDetails));
+    } catch {
+      // ignore
+    }
 
-    setOrderConfirmed(orderDetails);
     setCartItems([]);
+    router.push(`/order-confirmation?order_id=${orderDetails.orderId}`);
   };
 
   const handleReviewSubmit = async (data: FieldValues) => {
@@ -631,16 +630,16 @@ export default function Home() {
           <a href="#faq" className="hover:text-[#d4af37] transition-colors">FAQ</a>
         </nav>
 
-        <button
-          onClick={() => setIsDrawerOpen(true)}
+        <Link
+          href="/cart"
           className="relative flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#051408] px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-[11px] sm:text-xs font-extrabold uppercase tracking-wider hover:brightness-110 transition-all shadow-md active:scale-95"
         >
           <ShoppingBag className="w-4 h-4 text-[#051408]" />
           <span>Cart</span>
           <span className="bg-[#051408] text-[#d4af37] w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black">
-            {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+            {cart.cartItems.reduce((acc, item) => acc + item.quantity, 0)}
           </span>
-        </button>
+        </Link>
       </header>
 
       <main>
@@ -814,16 +813,27 @@ export default function Home() {
 
               {/* ACTION BUTTONS */}
               <div className="space-y-3 pt-2">
-                {/* Primary Buy Button */}
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleBuyNow}
-                  className="w-full bg-[#0b2912] text-white py-4 px-6 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-[#154620] transition-colors shadow-lg flex items-center justify-center gap-3"
-                >
-                  <ShoppingBag className="w-5 h-5" />
-                  <span>Order Now — Cash On Delivery</span>
-                </motion.button>
+                {/* Dual Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleBuyNow}
+                    className="w-full bg-gradient-to-r from-[#d4af37] via-[#f7e092] to-[#d4af37] text-[#051408] py-3.5 px-4 rounded-xl font-black text-xs sm:text-sm uppercase tracking-wider hover:brightness-105 transition-all shadow-lg flex items-center justify-center gap-2"
+                  >
+                    <ShoppingBag className="w-4 h-4 text-[#051408]" />
+                    <span>Order Now (COD)</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleAddToCart}
+                    className="w-full bg-[#0b2912] text-white py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider hover:bg-[#154620] transition-colors shadow-md flex items-center justify-center gap-2 border border-[#d4af37]/30"
+                  >
+                    <ArrowRight className="w-4 h-4 text-[#d4af37]" />
+                    <span>View Cart & Offers</span>
+                  </motion.button>
+                </div>
 
                 <p className="text-center text-[11px] text-gray-500 font-medium flex items-center justify-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" /> Pay Cash when parcel arrives at your doorstep
@@ -834,7 +844,7 @@ export default function Home() {
               <div className="border-t border-[#e7e1d5] pt-4 space-y-2 text-xs text-gray-700">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Stops severe hair fall in 14 days of regular application</span>
+                  <span>Helps visibly reduce hair fall & nourish follicles with regular application</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1139,7 +1149,7 @@ export default function Home() {
                   <div className="absolute bottom-4 right-4 bg-gradient-to-r from-[#0b2912]/90 to-black/90 backdrop-blur-md border border-[#d4af37]/50 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow-2xl flex items-center gap-3">
                     <Sparkles className="w-5 h-5 text-[#d4af37] animate-spin" />
                     <div>
-                      <p className="font-extrabold text-[#f7e092] text-xs">100% Guaranteed Results</p>
+                      <p className="font-extrabold text-[#f7e092] text-xs">100% Satisfaction Guarantee</p>
                       <p className="text-[10px] text-gray-300">Shine • Thickness • Root Strength</p>
                     </div>
                   </div>
